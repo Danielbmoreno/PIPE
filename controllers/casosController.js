@@ -1,17 +1,12 @@
-const supabase = require('../config/supabase');
+const db = require('../config/db');
 const { sendSuccess, sendError } = require('./responseHelper');
 
-const getCasos = async (req, res) => {
+const getCasos = (req, res) => {
   try {
     console.log('📌 GET /casos');
-    const { data, error } = await supabase
-      .from('casos')
-      .select('*')
-      .order('id', { ascending: false });
+    const data = db.getAll('casos').sort((a, b) => b.id - a.id);
 
-    if (error) throw error;
-
-    console.log(`✅ ${data?.length || 0} casos obtenidos`);
+    console.log(`✅ ${data.length} casos obtenidos`);
     return sendSuccess(res, data, 'Casos obtenidos correctamente');
   } catch (err) {
     console.error('❌ Error GET /casos:', err);
@@ -19,7 +14,7 @@ const getCasos = async (req, res) => {
   }
 };
 
-const createCaso = async (req, res) => {
+const createCaso = (req, res) => {
   try {
     const { estudiante_id, usuario_id, descripcion, estado } = req.body;
     console.log('📌 POST /casos', { estudiante_id, estado });
@@ -29,13 +24,12 @@ const createCaso = async (req, res) => {
     if (!descripcion || descripcion.trim() === '') return sendError(res, 'descripcion es requerida', 400);
     if (!estado || estado.trim() === '') return sendError(res, 'estado es requerido', 400);
 
-    const { data, error } = await supabase
-      .from('casos')
-      .insert([{ estudiante_id, usuario_id, descripcion: descripcion.trim(), estado: estado.trim() }])
-      .select('*')
-      .single();
-
-    if (error) throw error;
+    const data = db.insert('casos', {
+      estudiante_id,
+      usuario_id,
+      descripcion: descripcion.trim(),
+      estado: estado.trim()
+    });
 
     console.log(`✅ Caso creado: ${data.id}`);
     return sendSuccess(res, data, 'Caso creado correctamente', 201);
@@ -45,7 +39,7 @@ const createCaso = async (req, res) => {
   }
 };
 
-const updateCaso = async (req, res) => {
+const updateCaso = (req, res) => {
   try {
     const { id } = req.params;
     const { descripcion, estado } = req.body;
@@ -59,14 +53,10 @@ const updateCaso = async (req, res) => {
       return sendError(res, 'Se debe enviar al menos un campo para actualizar', 400);
     }
 
-    const { data, error } = await supabase
-      .from('casos')
-      .update(payload)
-      .eq('id', id)
-      .select('*')
-      .single();
-
-    if (error) throw error;
+    const data = db.update('casos', id, payload);
+    if (!data) {
+      return sendError(res, 'Caso no encontrado', 404);
+    }
 
     console.log(`✅ Caso ${id} actualizado`);
     return sendSuccess(res, data, 'Caso actualizado correctamente');
@@ -76,20 +66,18 @@ const updateCaso = async (req, res) => {
   }
 };
 
-const deleteCaso = async (req, res) => {
+const deleteCaso = (req, res) => {
   try {
     const { id } = req.params;
     console.log(`📌 DELETE /casos/${id}`);
 
-    const { error } = await supabase
-      .from('casos')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    const deleted = db.remove('casos', id);
+    if (!deleted) {
+      return sendError(res, 'Caso no encontrado', 404);
+    }
 
     console.log(`✅ Caso ${id} eliminado`);
-    return sendSuccess(res, { id }, 'Caso eliminado correctamente');
+    return sendSuccess(res, { id: Number(id) }, 'Caso eliminado correctamente');
   } catch (err) {
     console.error('❌ Error DELETE /casos/:id:', err);
     return sendError(res, err.message || 'Error al eliminar caso', 500);

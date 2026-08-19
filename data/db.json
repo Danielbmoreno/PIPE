@@ -1,0 +1,183 @@
+{
+  "estudiantes": [
+    {
+      "nombre": "Daniel moreno",
+      "codigo": "12345",
+      "programa": "ISUM",
+      "semestre": 6,
+      "nivel_riesgo": "bajo",
+      "id": 1,
+      "uuid": "0f1aee41-dd69-43dd-9473-18902c08eee0",
+      "codigo_radicado": "EST-2026-000001"
+    },
+    {
+      "nombre": "Jorge",
+      "codigo": "841272",
+      "programa": "ISUM",
+      "semestre": 7,
+      "nivel_riesgo": "bajo",
+      "id": 2,
+      "uuid": "fc5a0903-b102-4307-b9a3-e2a975985cb6",
+      "codigo_radicado": "EST-2026-000002"
+    },
+    {
+      "usuario_id": 5,
+      "nombre": "Alumno Prueba",
+      "correo": "s12345@universidad.edu",
+      "codigo": "S12345",
+      "codigo_estudiante": "S12345",
+      "programa": "TIC",
+      "semestre": 2,
+      "nivel_riesgo": "critico",
+      "estado": "activo",
+      "created_at": "2026-05-26T20:05:58.100Z",
+      "id": 3,
+      "uuid": "5bb27bbf-9437-49ae-b5a4-3a13f6864fe1",
+      "codigo_radicado": "EST-2026-000003"
+    },
+    {
+      "usuario_id": 6,
+      "nombre": "javier",
+      "correo": "84124@universidad.edu",
+      "codigo": "84124",
+      "codigo_estudiante": "84124",
+      "programa": "ISUM",
+      "semestre": 9,
+      "nivel_riesgo": "bajo",
+      "estado": "activo",
+      "created_at": "2026-05-27T00:33:24.950Z",
+      "id": 4,
+      "uuid": "1b3d8be7-6017-4094-84d1-407a1402e983",
+      "codigo_radicado": "EST-2026-000004"
+    }
+  ],
+  "alertas": [
+    {
+      "estudiante_id": "84122",
+      "usuario_id": "84122",
+      "descripcion": "3",
+      "nivel_riesgo": "4",
+      "id": 1,
+      "uuid": "594b4d52-8310-4252-9bcd-e08d2ee873de",
+      "codigo_radicado": "ALT-2026-000001"
+    },
+    {
+      "estudiante_id": "1",
+      "usuario_id": "1",
+      "descripcion": "1",
+      "nivel_riesgo": "1",
+      "id": 2,
+      "uuid": "8edb0ec3-e947-444e-a3a0-f56bd9d306c9",
+      "codigo_radicado": "ALT-2026-000002"
+    }
+  ],
+  "casos": [
+    {
+      "estudiante_id": "1",
+      "usuario_id": "1",
+      "descripcion": "1",
+      "estado": "1",
+      "id": 1,
+      "uuid": "43819798-7c29-4cd2-8824-9a79689494f4",
+      "codigo_radicado": "CAS-2026-000001"
+    }
+  ],
+  "intervenciones": [
+    {
+      "caso_id": "1",
+      "usuario_id": "2",
+      "descripcion": "3",
+      "id": 1,
+      "uuid": "74b3ddd5-c316-4f06-8797-2876c0275983",
+      "codigo_radicado": "INT-2026-000001"
+    }
+  ],
+  "citas": [
+    {
+      "estudiante_id": "23456",
+      "usuario_id": "3456",
+      "fecha": "2026-05-27",
+      "hora": "14:22",
+      "motivo": "2345",
+      "estado": "2",
+      "id": 1,
+      "uuid": "971bd35f-1587-479b-a437-4ea706af2c0d",
+      "codigo_radicado": "CIT-2026-000001"
+    },
+    {
+      "estudiante_id": "1",
+      "usuario_id": "1",
+      "fecha": "2026-05-27",
+      "hora": "15:07",
+      "motivo": "q234r",
+      "estado": "2345",
+      "id": 2,
+      "uuid": "c4896043-b65d-4597-a219-cec7829a2b33",
+      "codigo_radicado": "CIT-2026-000002"
+    }
+  ],
+  "usuarios": [
+    {
+      "nombre": "Administrador PIPE",
+      "correo": "admin@universidad.edu",
+      "password": "$2b$10$Y0fp9/.F87HgmiOV1HPxcuYPIV2dPsgX4.uR/5Hbri3fl6GKPaLi2",
+      "rol_id": "admin",
+      "id": 1,
+      "uuid": "3de55fd3-f8ae-42a9-8be1-11e22dab3207",
+      "codigo_radicado": "USR-2026-000001"
+    },
+    {
+      "nombre": "Profesor PIPE",
+      "correo": "docente@universidad.edu",
+      "password": "$2b$10$UnborKce7H.qbq1zBszXcez6Cxx2JtnkEQfOJxJcGrfl6EGUeoEcO",
+      "rol_id": "docente",
+      "id": 2,
+      "uuid": "335d2d3b-5e03-408e-a0e1-67c0e9ee622c",
+      "codigo_radicado": "USR-2026-000002"
+    },
+    {
+      "nombre": "Consejero PIPE",
+      "correo": "consejero@universidad.edu",
+      "password": "$2b$10$Gf/qYzfj4yauBKiSLwJkRe02dVh8fFy6R9ZkPw/mLBdjjGaQuct2.",
+      "rol_id": "consejero",
+      "id": 3,
+      "uuid": "4d0d1302-cc9a-4695-9578-ec35b3161379",
+      "codigo_radicado": "USR-2026-000003"
+    },
+    {
+      "nombre": "Estudiante PIPE",
+      "correo": "estudiante@universidad.edu",
+      "password": "$2b$10$v7FCoN.uAPDp6bBl3y6RKuKTfILcbC6K5IJFCOvYZiRXDszHJzmr2",
+      "rol_id": "estudiante",
+      "id": 4,
+      "uuid": "5762e8fd-c805-4265-b084-775abd7774af",
+      "codigo_radicado": "USR-2026-000004"
+    },
+    {
+      "nombre": "Alumno Prueba",
+      "correo": "s12345@universidad.edu",
+      "password": "$2b$10$drw2VoVEHTWADtmiSyYMVOPc.L1hTYd16KvDlKwHfkmWv8KB4Optu",
+      "password_hash": "$2b$10$drw2VoVEHTWADtmiSyYMVOPc.L1hTYd16KvDlKwHfkmWv8KB4Optu",
+      "rol_id": "estudiante",
+      "activo": true,
+      "created_at": "2026-05-26T20:05:58.099Z",
+      "ultimo_login": null,
+      "id": 5,
+      "uuid": "5ba8c28f-bfd5-42e7-85e4-18515042c75c",
+      "codigo_radicado": "USR-2026-000005"
+    },
+    {
+      "nombre": "javier",
+      "correo": "84124@universidad.edu",
+      "password": "$2b$10$GaiPq98bygGwLEWP6WBkBOnf2B3vmc19esI/OHQssfTv3hT.jUaCa",
+      "password_hash": "$2b$10$GaiPq98bygGwLEWP6WBkBOnf2B3vmc19esI/OHQssfTv3hT.jUaCa",
+      "rol_id": "estudiante",
+      "activo": true,
+      "created_at": "2026-05-27T00:33:24.939Z",
+      "ultimo_login": null,
+      "id": 6,
+      "uuid": "030b134e-07f3-4669-b1d2-b68099faff9b",
+      "codigo_radicado": "USR-2026-000006"
+    }
+  ]
+}

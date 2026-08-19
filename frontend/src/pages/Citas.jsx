@@ -39,6 +39,7 @@ const Citas = () => {
       citas.filter((item) =>
         item.motivo.toLowerCase().includes(query) ||
         item.estado.toLowerCase().includes(query) ||
+        (item.codigo_radicado || '').toLowerCase().includes(query) ||
         String(item.estudiante_id).includes(query)
       )
     );
@@ -123,7 +124,7 @@ const Citas = () => {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Código</th>
                 <th>Estudiante</th>
                 <th>Fecha</th>
                 <th>Hora</th>
@@ -135,7 +136,8 @@ const Citas = () => {
             <tbody>
               {filtered.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.id}</td>
+                  <td>{item.codigo_radicado || item.id}</td>
+
                   <td>{item.estudiante_id}</td>
                   <td>{item.fecha}</td>
                   <td>{item.hora}</td>

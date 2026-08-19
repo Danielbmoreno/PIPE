@@ -39,6 +39,7 @@ const Intervenciones = () => {
     setFiltered(
       intervenciones.filter((item) =>
         item.descripcion.toLowerCase().includes(query) ||
+        (item.codigo_radicado || '').toLowerCase().includes(query) ||
         String(item.caso_id).includes(query)
       )
     );
@@ -116,7 +117,7 @@ const Intervenciones = () => {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Código</th>
                 <th>Caso</th>
                 <th>Usuario</th>
                 <th>Descripción</th>
@@ -126,7 +127,8 @@ const Intervenciones = () => {
             <tbody>
               {filtered.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.id}</td>
+                  <td>{item.codigo_radicado || item.id}</td>
+
                   <td>{item.caso_id}</td>
                   <td>{item.usuario_id}</td>
                   <td>{item.descripcion}</td>

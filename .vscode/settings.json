@@ -1,3 +1,9 @@
 {
-    "claudeCode.useTerminal": true
+    "claudeCode.useTerminal": true,
+    "chat.tools.terminal.autoApprove": {
+        "/^cd \"c:\\\\Users\\\\moren\\\\OneDrive\\\\Escritorio\\\\PROYECTO PIPE\\\\PIPEND\"; node -e \"const http=require\\('http'\\); const loginData=JSON\\.stringify\\(\\{correo:'admin@universidad\\.edu',password:'Password123'\\}\\); const loginOpts=\\{hostname:'localhost',port:3000,path:'/auth/login',method:'POST',headers:\\{'Content-Type':'application/json','Content-Length':Buffer\\.byteLength\\(loginData\\)\\}\\}; const req=http\\.request\\(loginOpts,res=>\\{let body='';res\\.on\\('data',c=>body\\+=c\\);res\\.on\\('end',\\(\\)=>\\{const p=JSON\\.parse\\(body\\); const token=p\\.data\\.token; const dashOpts=\\{hostname:'localhost',port:3000,path:'/dashboard',method:'GET',headers:\\{Authorization:'Bearer '\\+token\\}\\}; const req2=http\\.request\\(dashOpts,res2=>\\{let body2='';res2\\.on\\('data',c=>body2\\+=c\\);res2\\.on\\('end',\\(\\)=>console\\.log\\('DASH',body2\\)\\);\\}\\); req2\\.on\\('error',console\\.error\\); req2\\.end\\(\\);\\}\\);\\}\\); req\\.on\\('error',console\\.error\\); req\\.write\\(loginData\\); req\\.end\\(\\);\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
 }

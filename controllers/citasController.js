@@ -1,17 +1,12 @@
-const supabase = require('../config/supabase');
+const db = require('../config/db');
 const { sendSuccess, sendError } = require('./responseHelper');
 
-const getCitas = async (req, res) => {
+const getCitas = (req, res) => {
   try {
     console.log('📌 GET /citas');
-    const { data, error } = await supabase
-      .from('citas')
-      .select('*')
-      .order('id', { ascending: false });
+    const data = db.getAll('citas').sort((a, b) => b.id - a.id);
 
-    if (error) throw error;
-
-    console.log(`✅ ${data?.length || 0} citas obtenidas`);
+    console.log(`✅ ${data.length} citas obtenidas`);
     return sendSuccess(res, data, 'Citas obtenidas correctamente');
   } catch (err) {
     console.error('❌ Error GET /citas:', err);
@@ -19,7 +14,7 @@ const getCitas = async (req, res) => {
   }
 };
 
-const createCita = async (req, res) => {
+const createCita = (req, res) => {
   try {
     const { estudiante_id, usuario_id, fecha, hora, motivo, estado } = req.body;
     console.log('📌 POST /citas', { estudiante_id, fecha, hora });
@@ -31,20 +26,14 @@ const createCita = async (req, res) => {
     if (!motivo || motivo.trim() === '') return sendError(res, 'motivo es requerido', 400);
     if (!estado || estado.trim() === '') return sendError(res, 'estado es requerido', 400);
 
-    const { data, error } = await supabase
-      .from('citas')
-      .insert([{ 
-        estudiante_id, 
-        usuario_id, 
-        fecha, 
-        hora, 
-        motivo: motivo.trim(), 
-        estado: estado.trim() 
-      }])
-      .select('*')
-      .single();
-
-    if (error) throw error;
+    const data = db.insert('citas', {
+      estudiante_id,
+      usuario_id,
+      fecha,
+      hora,
+      motivo: motivo.trim(),
+      estado: estado.trim()
+    });
 
     console.log(`✅ Cita creada: ${data.id}`);
     return sendSuccess(res, data, 'Cita creada correctamente', 201);
@@ -54,7 +43,7 @@ const createCita = async (req, res) => {
   }
 };
 
-const updateCita = async (req, res) => {
+const updateCita = (req, res) => {
   try {
     const { id } = req.params;
     const { fecha, hora, motivo, estado } = req.body;
@@ -70,14 +59,10 @@ const updateCita = async (req, res) => {
       return sendError(res, 'Se debe enviar al menos un campo para actualizar', 400);
     }
 
-    const { data, error } = await supabase
-      .from('citas')
-      .update(payload)
-      .eq('id', id)
-      .select('*')
-      .single();
-
-    if (error) throw error;
+    const data = db.update('citas', id, payload);
+    if (!data) {
+      return sendError(res, 'Cita no encontrada', 404);
+    }
 
     console.log(`✅ Cita ${id} actualizada`);
     return sendSuccess(res, data, 'Cita actualizada correctamente');
@@ -87,20 +72,18 @@ const updateCita = async (req, res) => {
   }
 };
 
-const deleteCita = async (req, res) => {
+const deleteCita = (req, res) => {
   try {
     const { id } = req.params;
     console.log(`📌 DELETE /citas/${id}`);
 
-    const { error } = await supabase
-      .from('citas')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    const deleted = db.remove('citas', id);
+    if (!deleted) {
+      return sendError(res, 'Cita no encontrada', 404);
+    }
 
     console.log(`✅ Cita ${id} eliminada`);
-    return sendSuccess(res, { id }, 'Cita eliminada correctamente');
+    return sendSuccess(res, { id: Number(id) }, 'Cita eliminada correctamente');
   } catch (err) {
     console.error('❌ Error DELETE /citas/:id:', err);
     return sendError(res, err.message || 'Error al eliminar cita', 500);

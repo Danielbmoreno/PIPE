@@ -1,14 +1,38 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext.jsx';
+import { useToast } from '../components/ui/ToastContext.jsx';
 
 const Login = () => {
+  const { user, login } = useAuth();
+  const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  useEffect(() => {
+    if (user) {
+      navigate('/app/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    navigate('/app/dashboard');
+    setError('');
+    setLoading(true);
+
+    try {
+      await login(email, password);
+      navigate('/app/dashboard', { replace: true });
+    } catch (err) {
+      const message = err?.message || err?.error || 'No se pudo iniciar sesión';
+      setError(message);
+      showToast(message, 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -23,7 +47,8 @@ const Login = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="usuario@institucion.edu"
+              placeholder="usuario@universidad.edu"
+              required
             />
           </label>
           <label>
@@ -33,9 +58,16 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="********"
+              required
             />
           </label>
-          <button type="submit" className="primary-button">Iniciar sesión</button>
+
+          {error && <div className="error-text">{error}</div>}
+
+          <button type="submit" className="primary-button" disabled={loading}>
+            {loading ? 'Validando...' : 'Iniciar sesión'}
+          </button>
+          <p className="login-hint">Debes usar un correo institucional que termine en <strong>.edu</strong>.</p>
         </form>
       </div>
     </div>

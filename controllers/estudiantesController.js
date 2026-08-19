@@ -1,17 +1,13 @@
-const supabase = require('../config/supabase');
+const db = require('../config/db');
+const bcrypt = require('bcrypt');
 const { sendSuccess, sendError } = require('./responseHelper');
 
-const getEstudiantes = async (req, res) => {
+const getEstudiantes = (req, res) => {
   try {
     console.log('📌 GET /estudiantes');
-    const { data, error } = await supabase
-      .from('estudiantes')
-      .select('*')
-      .order('id', { ascending: false });
+    const data = db.getAll('estudiantes').sort((a, b) => b.id - a.id);
 
-    if (error) throw error;
-
-    console.log(`✅ ${data?.length || 0} estudiantes obtenidos`);
+    console.log(`✅ ${data.length} estudiantes obtenidos`);
     return sendSuccess(res, data, 'Estudiantes obtenidos correctamente');
   } catch (err) {
     console.error('❌ Error GET /estudiantes:', err);
@@ -19,18 +15,12 @@ const getEstudiantes = async (req, res) => {
   }
 };
 
-const getEstudianteById = async (req, res) => {
+const getEstudianteById = (req, res) => {
   try {
     const { id } = req.params;
     console.log(`📌 GET /estudiantes/${id}`);
 
-    const { data, error } = await supabase
-      .from('estudiantes')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
+    const data = db.getById('estudiantes', id);
     if (!data) return sendError(res, 'Estudiante no encontrado', 404);
 
     console.log(`✅ Estudiante ${id} obtenido`);
@@ -43,8 +33,8 @@ const getEstudianteById = async (req, res) => {
 
 const createEstudiante = async (req, res) => {
   try {
-    const { nombre, codigo, programa, semestre, nivel_riesgo } = req.body;
-    console.log('📌 POST /estudiantes', { nombre, codigo });
+    const { nombre, codigo, programa, semestre, nivel_riesgo, correo, password } = req.body;
+    console.log('📌 POST /estudiantes', { nombre, codigo, correo });
 
     if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
       return sendError(res, 'Nombre es requerido y debe ser texto', 400);
@@ -53,32 +43,69 @@ const createEstudiante = async (req, res) => {
       return sendError(res, 'Código es requerido y debe ser texto', 400);
     }
 
-    const payload = {
-      nombre: nombre.trim(),
-      codigo: codigo.trim()
+    // correo institucional: si no viene, se genera a partir del código
+    const email = correo && String(correo).trim().toLowerCase()
+      ? String(correo).trim().toLowerCase()
+      : `${String(codigo).trim().toLowerCase()}@universidad.edu`;
+
+    if (!email.endsWith('.edu')) {
+      return sendError(res, 'El correo debe ser institucional (.edu)', 400);
+    }
+
+    // verificar unicidad de correo
+    const existingUser = db.getAll('usuarios').find((u) => String(u.correo).toLowerCase() === email);
+    if (existingUser) {
+      return sendError(res, 'Correo ya registrado', 409);
+    }
+
+    // generar contraseña si no viene
+    const plainPassword = password && String(password).trim() !== '' ? String(password) : Math.random().toString(36).slice(-8) + 'A1';
+    const hashed = await bcrypt.hash(plainPassword, 10);
+
+    // crear usuario
+    const usuarioPayload = {
+      nombre: String(nombre).trim(),
+      correo: email,
+      password: hashed,
+      password_hash: hashed,
+      rol_id: 'estudiante',
+      activo: true,
+      created_at: new Date().toISOString(),
+      ultimo_login: null
     };
 
-    if (programa && programa.trim()) payload.programa = programa.trim();
-    if (semestre) payload.semestre = parseInt(semestre);
-    if (nivel_riesgo && nivel_riesgo.trim()) payload.nivel_riesgo = nivel_riesgo.trim();
+    const createdUser = db.insert('usuarios', usuarioPayload);
 
-    const { data, error } = await supabase
-      .from('estudiantes')
-      .insert([payload])
-      .select('*')
-      .single();
+    // crear registro de estudiante vinculado
+    const estudiantePayload = {
+      usuario_id: createdUser.id,
+      nombre: String(nombre).trim(),
+      correo: email,
+      codigo: String(codigo).trim(),
+      codigo_estudiante: String(codigo).trim(),
+      programa: programa ? String(programa).trim() : '',
+      semestre: semestre ? Number(semestre) : null,
+      nivel_riesgo: nivel_riesgo ? String(nivel_riesgo).trim() : '',
+      estado: 'activo',
+      created_at: new Date().toISOString()
+    };
 
-    if (error) throw error;
+    const createdEstudiante = db.insert('estudiantes', estudiantePayload);
 
-    console.log(`✅ Estudiante creado: ${data.id}`);
-    return sendSuccess(res, data, 'Estudiante creado correctamente', 201);
+    console.log(`✅ Usuario creado: ${createdUser.id} - Estudiante creado: ${createdEstudiante.id}`);
+
+    // devolver también la contraseña generada (solo en entorno dev)
+    const responseData = { ...createdEstudiante, usuario: { id: createdUser.id, correo: createdUser.correo } };
+    responseData.plain_password = plainPassword;
+
+    return sendSuccess(res, responseData, 'Estudiante y usuario creados correctamente', 201);
   } catch (err) {
     console.error('❌ Error POST /estudiantes:', err);
     return sendError(res, err.message || 'Error al crear estudiante', 500);
   }
 };
 
-const updateEstudiante = async (req, res) => {
+const updateEstudiante = (req, res) => {
   try {
     const { id } = req.params;
     const { nombre, codigo, programa, semestre, nivel_riesgo } = req.body;
@@ -88,21 +115,17 @@ const updateEstudiante = async (req, res) => {
     if (nombre && nombre.trim()) payload.nombre = nombre.trim();
     if (codigo && codigo.trim()) payload.codigo = codigo.trim();
     if (programa && programa.trim()) payload.programa = programa.trim();
-    if (semestre) payload.semestre = parseInt(semestre);
+    if (semestre !== undefined) payload.semestre = semestre === '' ? null : Number(semestre);
     if (nivel_riesgo && nivel_riesgo.trim()) payload.nivel_riesgo = nivel_riesgo.trim();
 
     if (Object.keys(payload).length === 0) {
       return sendError(res, 'Se debe enviar al menos un campo para actualizar', 400);
     }
 
-    const { data, error } = await supabase
-      .from('estudiantes')
-      .update(payload)
-      .eq('id', id)
-      .select('*')
-      .single();
-
-    if (error) throw error;
+    const data = db.update('estudiantes', id, payload);
+    if (!data) {
+      return sendError(res, 'Estudiante no encontrado', 404);
+    }
 
     console.log(`✅ Estudiante ${id} actualizado`);
     return sendSuccess(res, data, 'Estudiante actualizado correctamente');
@@ -112,20 +135,18 @@ const updateEstudiante = async (req, res) => {
   }
 };
 
-const deleteEstudiante = async (req, res) => {
+const deleteEstudiante = (req, res) => {
   try {
     const { id } = req.params;
     console.log(`📌 DELETE /estudiantes/${id}`);
 
-    const { error } = await supabase
-      .from('estudiantes')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    const deleted = db.remove('estudiantes', id);
+    if (!deleted) {
+      return sendError(res, 'Estudiante no encontrado', 404);
+    }
 
     console.log(`✅ Estudiante ${id} eliminado`);
-    return sendSuccess(res, { id }, 'Estudiante eliminado correctamente');
+    return sendSuccess(res, { id: Number(id) }, 'Estudiante eliminado correctamente');
   } catch (err) {
     console.error('❌ Error DELETE /estudiantes/:id:', err);
     return sendError(res, err.message || 'Error al eliminar estudiante', 500);

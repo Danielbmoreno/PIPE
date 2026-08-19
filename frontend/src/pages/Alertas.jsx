@@ -45,6 +45,7 @@ const Alertas = () => {
       alertas.filter((item) =>
         item.descripcion.toLowerCase().includes(query) ||
         item.nivel_riesgo.toLowerCase().includes(query) ||
+        (item.codigo_radicado || '').toLowerCase().includes(query) ||
         String(item.estudiante_id).includes(query)
       )
     );
@@ -127,7 +128,7 @@ const Alertas = () => {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Código</th>
                 <th>Estudiante</th>
                 <th>Usuario</th>
                 <th>Descripción</th>
@@ -138,7 +139,8 @@ const Alertas = () => {
             <tbody>
               {filtered.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.id}</td>
+                  <td>{item.codigo_radicado || item.id}</td>
+
                   <td>{item.estudiante_id}</td>
                   <td>{item.usuario_id}</td>
                   <td>{item.descripcion}</td>

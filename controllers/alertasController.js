@@ -1,17 +1,12 @@
-const supabase = require('../config/supabase');
+const db = require('../config/db');
 const { sendSuccess, sendError } = require('./responseHelper');
 
-const getAlertas = async (req, res) => {
+const getAlertas = (req, res) => {
   try {
     console.log('📌 GET /alertas');
-    const { data, error } = await supabase
-      .from('alertas')
-      .select('*')
-      .order('id', { ascending: false });
+    const data = db.getAll('alertas').sort((a, b) => b.id - a.id);
 
-    if (error) throw error;
-
-    console.log(`✅ ${data?.length || 0} alertas obtenidas`);
+    console.log(`✅ ${data.length} alertas obtenidas`);
     return sendSuccess(res, data, 'Alertas obtenidas correctamente');
   } catch (err) {
     console.error('❌ Error GET /alertas:', err);
@@ -19,7 +14,7 @@ const getAlertas = async (req, res) => {
   }
 };
 
-const createAlerta = async (req, res) => {
+const createAlerta = (req, res) => {
   try {
     const { estudiante_id, usuario_id, descripcion, nivel_riesgo } = req.body;
     console.log('📌 POST /alertas', { estudiante_id, nivel_riesgo });
@@ -29,13 +24,12 @@ const createAlerta = async (req, res) => {
     if (!descripcion || descripcion.trim() === '') return sendError(res, 'descripcion es requerida', 400);
     if (!nivel_riesgo || nivel_riesgo.trim() === '') return sendError(res, 'nivel_riesgo es requerido', 400);
 
-    const { data, error } = await supabase
-      .from('alertas')
-      .insert([{ estudiante_id, usuario_id, descripcion: descripcion.trim(), nivel_riesgo: nivel_riesgo.trim() }])
-      .select('*')
-      .single();
-
-    if (error) throw error;
+    const data = db.insert('alertas', {
+      estudiante_id,
+      usuario_id,
+      descripcion: descripcion.trim(),
+      nivel_riesgo: nivel_riesgo.trim()
+    });
 
     console.log(`✅ Alerta creada: ${data.id}`);
     return sendSuccess(res, data, 'Alerta creada correctamente', 201);
@@ -45,7 +39,7 @@ const createAlerta = async (req, res) => {
   }
 };
 
-const updateAlerta = async (req, res) => {
+const updateAlerta = (req, res) => {
   try {
     const { id } = req.params;
     const { descripcion, nivel_riesgo } = req.body;
@@ -59,14 +53,10 @@ const updateAlerta = async (req, res) => {
       return sendError(res, 'Se debe enviar al menos un campo para actualizar', 400);
     }
 
-    const { data, error } = await supabase
-      .from('alertas')
-      .update(payload)
-      .eq('id', id)
-      .select('*')
-      .single();
-
-    if (error) throw error;
+    const data = db.update('alertas', id, payload);
+    if (!data) {
+      return sendError(res, 'Alerta no encontrada', 404);
+    }
 
     console.log(`✅ Alerta ${id} actualizada`);
     return sendSuccess(res, data, 'Alerta actualizada correctamente');
@@ -76,20 +66,18 @@ const updateAlerta = async (req, res) => {
   }
 };
 
-const deleteAlerta = async (req, res) => {
+const deleteAlerta = (req, res) => {
   try {
     const { id } = req.params;
     console.log(`📌 DELETE /alertas/${id}`);
 
-    const { error } = await supabase
-      .from('alertas')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    const deleted = db.remove('alertas', id);
+    if (!deleted) {
+      return sendError(res, 'Alerta no encontrada', 404);
+    }
 
     console.log(`✅ Alerta ${id} eliminada`);
-    return sendSuccess(res, { id }, 'Alerta eliminada correctamente');
+    return sendSuccess(res, { id: Number(id) }, 'Alerta eliminada correctamente');
   } catch (err) {
     console.error('❌ Error DELETE /alertas/:id:', err);
     return sendError(res, err.message || 'Error al eliminar alerta', 500);

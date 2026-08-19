@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import estudiantesService from '../services/estudiantesService.js';
 import Loader from '../components/ui/Loader.jsx';
 import Modal from '../components/modals/Modal.jsx';
@@ -7,7 +8,7 @@ import ConfirmModal from '../components/modals/ConfirmModal.jsx';
 import Pagination from '../components/ui/Pagination.jsx';
 import { useToast } from '../components/ui/ToastContext.jsx';
 
-const initialForm = { nombre: '', codigo: '', programa: '', semestre: '', nivel_riesgo: '' };
+const initialForm = { nombre: '', codigo: '', programa: '', semestre: '', nivel_riesgo: '', correo: '', password: '' };
 const riskLevels = ['bajo', 'medio', 'alto', 'critico'];
 
 const getBadgeClass = (level) => {
@@ -21,6 +22,7 @@ const getBadgeClass = (level) => {
 const Estudiantes = () => {
   const { searchQuery } = useOutletContext();
   const { showToast } = useToast();
+  const { user } = useAuth();
   const [estudiantes, setEstudiantes] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,6 +62,7 @@ const Estudiantes = () => {
     setFiltered(
       estudiantes.filter((item) =>
         item.nombre.toLowerCase().includes(query) ||
+        (item.codigo_radicado || '').toLowerCase().includes(query) ||
         item.codigo.toLowerCase().includes(query) ||
         item.programa.toLowerCase().includes(query)
       )
@@ -117,10 +120,15 @@ const Estudiantes = () => {
         setEstudiantes((prev) => prev.map((item) => (item.id === selected.id ? response.data : item)));
         showToast('Estudiante actualizado.', 'success');
       } else {
-        const response = await estudiantesService.create(form);
+        const payload = { ...form };
+        const response = await estudiantesService.create(payload);
         if (!response.success) throw new Error(response.error || 'Error al crear estudiante.');
         setEstudiantes((prev) => [response.data, ...prev]);
-        showToast('Estudiante creado.', 'success');
+        if (response.data?.plain_password) {
+          showToast(`Estudiante creado. Contraseña: ${response.data.plain_password}`, 'success');
+        } else {
+          showToast('Estudiante creado.', 'success');
+        }
       }
       closeModal();
     } catch (err) {
@@ -162,7 +170,11 @@ const Estudiantes = () => {
           <h1>Estudiantes</h1>
           <p>Gestiona el registro de estudiantes y su información académica.</p>
         </div>
-        <button className="primary-button" onClick={openCreate}>Nuevo estudiante</button>
+        {['admin','consejero'].includes(user?.rol_id) ? (
+          <button className="primary-button" onClick={openCreate}>Nuevo estudiante</button>
+        ) : (
+          <div style={{ color: 'var(--text-muted)' }}>No tienes permiso para crear estudiantes</div>
+        )}
       </div>
 
       {error && <div className="alert-box">{error}</div>}
@@ -175,8 +187,10 @@ const Estudiantes = () => {
             <table>
               <thead>
                 <tr>
+                  <th>Radicado</th>
                   <th>Nombre</th>
                   <th>Código</th>
+                  <th>Código radicado</th>
                   <th>Programa</th>
                   <th>Semestre</th>
                   <th>Nivel de riesgo</th>
@@ -186,15 +200,22 @@ const Estudiantes = () => {
               <tbody>
                 {currentPageData.map((item) => (
                   <tr key={item.id}>
+                    <td>{item.codigo_radicado || 'N/A'}</td>
                     <td>{item.nombre}</td>
                     <td>{item.codigo}</td>
+                    <td>{item.codigo_radicado || 'N/A'}</td>
                     <td>{item.programa}</td>
+
                     <td>{item.semestre}</td>
                     <td><span className={getBadgeClass(item.nivel_riesgo)}>{item.nivel_riesgo || 'n/a'}</span></td>
                     <td className="actions-column">
                       <button className="secondary-button" onClick={() => openDetail(item)}>Ver</button>
-                      <button className="secondary-button" onClick={() => openEdit(item)}>Editar</button>
-                      <button className="danger-button" onClick={() => askDelete(item)}>Eliminar</button>
+                      {['admin','consejero'].includes(user?.rol_id) ? (
+                        <>
+                          <button className="secondary-button" onClick={() => openEdit(item)}>Editar</button>
+                          <button className="danger-button" onClick={() => askDelete(item)}>Eliminar</button>
+                        </>
+                      ) : null}
                     </td>
                   </tr>
                 ))}
@@ -242,6 +263,16 @@ const Estudiantes = () => {
               ))}
             </select>
           </label>
+          <hr />
+          <h3>Datos de acceso</h3>
+          <label>
+            Correo institucional
+            <input type="email" name="correo" value={form.correo} onChange={handleChange} placeholder="usuario@universidad.edu" required />
+          </label>
+          <label>
+            Contraseña (opcional, se generará si se deja vacío)
+            <input type="text" name="password" value={form.password} onChange={handleChange} placeholder="Generar si vacío" />
+          </label>
         </form>
       </Modal>
 
@@ -257,6 +288,10 @@ const Estudiantes = () => {
       >
         {detailData ? (
           <div className="detail-grid">
+            <div>
+              <strong>Código radicado:</strong>
+              <p>{detailData.codigo_radicado || 'N/A'}</p>
+            </div>
             <div>
               <strong>Nombre:</strong>
               <p>{detailData.nombre}</p>

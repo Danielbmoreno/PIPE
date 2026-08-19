@@ -1,4 +1,10 @@
+import { useAuth } from '../../contexts/AuthContext.jsx';
+import GlobalSearch from '../ui/GlobalSearch.jsx';
+import Notifications from '../ui/Notifications.jsx';
+
 const Topbar = ({ searchQuery, setSearchQuery }) => {
+  const { user } = useAuth();
+
   return (
     <header className="topbar">
       <div className="topbar-title">
@@ -6,17 +12,15 @@ const Topbar = ({ searchQuery, setSearchQuery }) => {
         <small>Plataforma de Permanencia Estudiantil</small>
       </div>
       <div className="topbar-actions">
-        <div className="search-box">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar en la vista actual..."
-          />
+        <div style={{ minWidth: 320, maxWidth: 520 }}>
+          <GlobalSearch onSearch={setSearchQuery} />
         </div>
+
+        <Notifications />
+
         <div className="user-card">
-          <span>Bienvenido</span>
-          <strong>Consejero</strong>
+          <span>{user?.nombre || 'Usuario'}</span>
+          <strong>{user?.rol_id ? user.rol_id.toUpperCase() : 'Invitado'}</strong>
         </div>
       </div>
     </header>

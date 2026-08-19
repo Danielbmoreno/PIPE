@@ -1,17 +1,12 @@
-const supabase = require('../config/supabase');
+const db = require('../config/db');
 const { sendSuccess, sendError } = require('./responseHelper');
 
-const getIntervenciones = async (req, res) => {
+const getIntervenciones = (req, res) => {
   try {
     console.log('📌 GET /intervenciones');
-    const { data, error } = await supabase
-      .from('intervenciones')
-      .select('*')
-      .order('id', { ascending: false });
+    const data = db.getAll('intervenciones').sort((a, b) => b.id - a.id);
 
-    if (error) throw error;
-
-    console.log(`✅ ${data?.length || 0} intervenciones obtenidas`);
+    console.log(`✅ ${data.length} intervenciones obtenidas`);
     return sendSuccess(res, data, 'Intervenciones obtenidas correctamente');
   } catch (err) {
     console.error('❌ Error GET /intervenciones:', err);
@@ -19,7 +14,7 @@ const getIntervenciones = async (req, res) => {
   }
 };
 
-const createIntervencion = async (req, res) => {
+const createIntervencion = (req, res) => {
   try {
     const { caso_id, usuario_id, descripcion } = req.body;
     console.log('📌 POST /intervenciones', { caso_id });
@@ -28,13 +23,11 @@ const createIntervencion = async (req, res) => {
     if (!usuario_id) return sendError(res, 'usuario_id es requerido', 400);
     if (!descripcion || descripcion.trim() === '') return sendError(res, 'descripcion es requerida', 400);
 
-    const { data, error } = await supabase
-      .from('intervenciones')
-      .insert([{ caso_id, usuario_id, descripcion: descripcion.trim() }])
-      .select('*')
-      .single();
-
-    if (error) throw error;
+    const data = db.insert('intervenciones', {
+      caso_id,
+      usuario_id,
+      descripcion: descripcion.trim()
+    });
 
     console.log(`✅ Intervención creada: ${data.id}`);
     return sendSuccess(res, data, 'Intervención creada correctamente', 201);
@@ -44,7 +37,7 @@ const createIntervencion = async (req, res) => {
   }
 };
 
-const updateIntervencion = async (req, res) => {
+const updateIntervencion = (req, res) => {
   try {
     const { id } = req.params;
     const { descripcion } = req.body;
@@ -54,14 +47,10 @@ const updateIntervencion = async (req, res) => {
       return sendError(res, 'descripcion es requerida', 400);
     }
 
-    const { data, error } = await supabase
-      .from('intervenciones')
-      .update({ descripcion: descripcion.trim() })
-      .eq('id', id)
-      .select('*')
-      .single();
-
-    if (error) throw error;
+    const data = db.update('intervenciones', id, { descripcion: descripcion.trim() });
+    if (!data) {
+      return sendError(res, 'Intervención no encontrada', 404);
+    }
 
     console.log(`✅ Intervención ${id} actualizada`);
     return sendSuccess(res, data, 'Intervención actualizada correctamente');
@@ -71,20 +60,18 @@ const updateIntervencion = async (req, res) => {
   }
 };
 
-const deleteIntervencion = async (req, res) => {
+const deleteIntervencion = (req, res) => {
   try {
     const { id } = req.params;
     console.log(`📌 DELETE /intervenciones/${id}`);
 
-    const { error } = await supabase
-      .from('intervenciones')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    const deleted = db.remove('intervenciones', id);
+    if (!deleted) {
+      return sendError(res, 'Intervención no encontrada', 404);
+    }
 
     console.log(`✅ Intervención ${id} eliminada`);
-    return sendSuccess(res, { id }, 'Intervención eliminada correctamente');
+    return sendSuccess(res, { id: Number(id) }, 'Intervención eliminada correctamente');
   } catch (err) {
     console.error('❌ Error DELETE /intervenciones/:id:', err);
     return sendError(res, err.message || 'Error al eliminar intervención', 500);
