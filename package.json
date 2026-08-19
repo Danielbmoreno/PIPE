@@ -1,0 +1,25 @@
+{
+  "name": "pipe-backend",
+  "version": "1.0.0",
+  "description": "Backend para PIPE - Plataforma Integral de Permanencia Estudiantil",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.3",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "jsonwebtoken": "^9.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
