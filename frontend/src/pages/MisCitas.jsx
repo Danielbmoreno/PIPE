@@ -12,7 +12,7 @@ const MisCitas = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const response = await citasService.getForStudent(user?.id);
+        const response = await citasService.getForStudent(user?.estudiante_id);
         if (!response.success) {
           throw new Error(response.error || 'Error al cargar las citas');
         }
@@ -25,7 +25,7 @@ const MisCitas = () => {
       }
     };
 
-    if (user) load();
+    if (user?.estudiante_id) load();
   }, [user]);
 
   if (loading) return <Loader />;

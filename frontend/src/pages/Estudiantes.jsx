@@ -9,7 +9,7 @@ import ConfirmModal from '../components/modals/ConfirmModal.jsx';
 import Pagination from '../components/ui/Pagination.jsx';
 import { useToast } from '../components/ui/ToastContext.jsx';
 
-const initialForm = { nombre: '', codigo: '', programa_id: '', nivel_riesgo: '' };
+const initialForm = { nombre: '', codigo: '', programa_id: '', nivel_riesgo: '', correo: '', password: '', confirmPassword: '' };
 const riskLevels = ['bajo', 'medio', 'alto', 'critico'];
 
 const getBadgeClass = (level) => {
@@ -81,21 +81,35 @@ const Estudiantes = () => {
     event.preventDefault();
     setSaving(true);
     try {
+      if (!form.nombre.trim() || !form.codigo.trim() || !form.programa_id || !form.nivel_riesgo) {
+        throw new Error('Completa todos los campos del estudiante.');
+      }
       const payload = {
         nombre: form.nombre.trim(),
         codigo: form.codigo.trim(),
-        programa_id: form.programa_id ? Number(form.programa_id) : null,
+        programa_id: Number(form.programa_id),
         nivel_riesgo: form.nivel_riesgo
       };
-      const response = selected
-        ? await estudiantesService.update(selected.id, payload)
-        : await estudiantesService.create(payload);
+      let response;
+      if (selected) {
+        response = await estudiantesService.update(selected.id, payload);
+      } else {
+        const email = form.correo.trim().toLowerCase();
+        if (!email || !email.endsWith('.edu')) throw new Error('Ingresa un correo institucional válido (.edu).');
+        if (!form.password || form.password.length < 6) throw new Error('La contraseña inicial debe tener al menos 6 caracteres.');
+        if (form.password !== form.confirmPassword) throw new Error('Las contraseñas no coinciden.');
+        response = await estudiantesService.create({ ...payload, correo: email, password: form.password });
+      }
       if (!response.success) throw new Error(response.error || 'No se pudo guardar el estudiante.');
+      const savedStudent = selected ? response.data : response.data?.estudiante;
       setEstudiantes((previous) => selected
-        ? previous.map((item) => item.id === selected.id ? response.data : item)
-        : [response.data, ...previous]);
+        ? previous.map((item) => item.id === selected.id ? savedStudent : item)
+        : [savedStudent, ...previous]);
+      setForm(initialForm);
+      setSelected(null);
       setModalOpen(false);
-      showToast(selected ? 'Estudiante actualizado.' : 'Estudiante creado.', 'success');
+      window.dispatchEvent(new Event('pipe:students-changed'));
+      showToast(selected ? 'Estudiante actualizado.' : 'Estudiante creado correctamente. La cuenta ya puede iniciar sesión.', 'success');
     } catch (err) {
       console.error('Error guardando estudiante:', err);
       showToast(err.message || 'No se pudo guardar el estudiante.', 'error');
@@ -125,14 +139,14 @@ const Estudiantes = () => {
     <div className="page-shell">
       <div className="page-header space-between">
         <div><h1>Estudiantes</h1><p>Gestiona el registro de estudiantes y su información académica.</p></div>
-        {['admin', 'consejero'].includes(user?.rol_id) && <button className="primary-button" onClick={openCreate}>Nuevo estudiante</button>}
+        {user?.rol_id === 'admin' && <button className="primary-button" onClick={openCreate}>Nuevo estudiante</button>}
       </div>
       {error && <div className="alert-box">{error}</div>}
       {filtered.length === 0 ? <div className="empty-state">No hay estudiantes disponibles.</div> : (
         <><div className="table-card"><table><thead><tr><th>Nombre</th><th>Código</th><th>Programa</th><th>Nivel de riesgo</th><th className="actions-column">Acciones</th></tr></thead><tbody>{currentPageData.map((item) => <tr key={item.id}><td>{item.nombre || 'Sin nombre'}</td><td>{item.codigo || 'Sin código'}</td><td>{programName(item.programa_id)}</td><td><span className={getBadgeClass(item.nivel_riesgo)}>{item.nivel_riesgo || 'Sin nivel'}</span></td><td className="actions-column"><button className="secondary-button" onClick={() => openDetail(item)}>Ver</button>{['admin', 'consejero'].includes(user?.rol_id) && <><button className="secondary-button" onClick={() => openEdit(item)}>Editar</button><button className="danger-button" onClick={() => { setSelected(item); setConfirmOpen(true); }}>Eliminar</button></>}</td></tr>)}</tbody></table></div><Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} /></>
       )}
       <Modal title={selected ? 'Editar estudiante' : 'Nuevo estudiante'} open={modalOpen} onClose={() => setModalOpen(false)} footer={<div className="modal-actions"><button type="button" className="secondary-button" onClick={() => setModalOpen(false)}>Cancelar</button><button type="submit" form="student-form" className="primary-button" disabled={saving}>{selected ? 'Actualizar' : 'Crear'}</button></div>}>
-        <form id="student-form" className="form-grid" onSubmit={handleSubmit}><label>Nombre<input type="text" name="nombre" value={form.nombre} onChange={handleChange} required /></label><label>Código<input type="text" name="codigo" value={form.codigo} onChange={handleChange} required /></label><label>Programa<select name="programa_id" value={form.programa_id} onChange={handleChange} required><option value="">Seleccionar programa</option>{programas.map((programa) => <option key={programa.id} value={programa.id}>{programa.nombre}</option>)}</select></label><label>Nivel de riesgo<select name="nivel_riesgo" value={form.nivel_riesgo} onChange={handleChange} required><option value="">Seleccionar nivel</option>{riskLevels.map((level) => <option key={level} value={level}>{level[0].toUpperCase() + level.slice(1)}</option>)}</select></label></form>
+        <form id="student-form" className="form-grid" onSubmit={handleSubmit}><label>Nombre completo<input type="text" name="nombre" value={form.nombre} onChange={handleChange} required /></label><label>Código estudiantil<input type="text" name="codigo" value={form.codigo} onChange={handleChange} required /></label><label>Programa<select name="programa_id" value={form.programa_id} onChange={handleChange} required><option value="">Seleccionar programa</option>{programas.map((programa) => <option key={programa.id} value={programa.id}>{programa.nombre}</option>)}</select></label><label>Nivel de riesgo<select name="nivel_riesgo" value={form.nivel_riesgo} onChange={handleChange} required><option value="">Seleccionar nivel</option>{riskLevels.map((level) => <option key={level} value={level}>{level[0].toUpperCase() + level.slice(1)}</option>)}</select></label>{!selected && <><label>Correo institucional<input type="email" name="correo" value={form.correo} onChange={handleChange} placeholder="estudiante@universidad.edu" required /></label><label>Contraseña inicial<input type="password" name="password" value={form.password} onChange={handleChange} minLength="6" required /></label><label>Confirmar contraseña<input type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} minLength="6" required /></label></>}</form>
       </Modal>
       <Modal title="Detalle del estudiante" open={detailOpen} onClose={() => setDetailOpen(false)} footer={<button className="secondary-button" onClick={() => setDetailOpen(false)}>Cerrar</button>}><div className="profile-item"><strong>Nombre</strong><span>{selected?.nombre || '-'}</span></div><div className="profile-item"><strong>Código</strong><span>{selected?.codigo || '-'}</span></div><div className="profile-item"><strong>Programa</strong><span>{selected ? programName(selected.programa_id) : '-'}</span></div><div className="profile-item"><strong>Nivel de riesgo</strong><span>{selected?.nivel_riesgo || '-'}</span></div></Modal>
       <ConfirmModal open={confirmOpen} title="Eliminar estudiante" message="¿Quieres eliminar este estudiante?" onConfirm={handleDelete} onCancel={() => setConfirmOpen(false)} />

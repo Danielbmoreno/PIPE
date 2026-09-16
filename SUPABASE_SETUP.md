@@ -28,11 +28,11 @@ No crees ni uses `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_SERVICE_KEY` ni ninguna 
 El código existente y `data/db.json` esperan estas tablas, con esos nombres:
 
 - `usuarios`: `id`, `uuid`, `nombre`, `correo`, `rol_id`, `activo`, `created_at`.
-- `estudiantes`: `id`, `uuid`, `usuario_id`, `nombre`, `correo`, `codigo`, `codigo_estudiante`, `programa`, `semestre`, `nivel_riesgo`, `estado`, `created_at`.
+- `estudiantes`: `id`, `usuario_id`, `nombre`, `codigo`, `programa_id`, `nivel_riesgo`, `created_at`.
 - `alertas`: `id`, `uuid`, `codigo_radicado`, `estudiante_id`, `usuario_id`, `descripcion`, `nivel_riesgo`.
 - `casos`: `id`, `uuid`, `codigo_radicado`, `estudiante_id`, `usuario_id`, `descripcion`, `estado`.
 - `intervenciones`: `id`, `uuid`, `codigo_radicado`, `caso_id`, `usuario_id`, `descripcion`.
-- `citas`: `id`, `uuid`, `codigo_radicado`, `estudiante_id`, `usuario_id`, `fecha`, `hora`, `motivo`, `estado`.
+- `citas`: `id`, `estudiante_id`, `usuario_id`, `fecha`, `hora`, `estado`, `created_at`.
 
 Relaciones esperadas: `estudiantes.usuario_id -> usuarios.id`, `alertas/casos/citas.estudiante_id -> estudiantes.id`, `alertas/casos/intervenciones/citas.usuario_id -> usuarios.id`, e `intervenciones.caso_id -> casos.id`.
 
@@ -42,7 +42,14 @@ No se incluyen migraciones SQL porque el esquema debe verificarse en el proyecto
 
 El login del frontend usa Supabase Auth (`signInWithPassword`) y busca el perfil de aplicación en `usuarios` por `correo`. Los usuarios deben existir también en `auth.users`; los hashes bcrypt del backend Node no son reutilizables directamente por Supabase Auth.
 
-Los CRUD de estudiantes, alertas, casos, intervenciones y citas, además del dashboard, consultan Supabase directamente. Crear un estudiante con una nueva cuenta requiere una Edge Function configurada mediante la variable opcional `VITE_SUPABASE_CREATE_STUDENT_FUNCTION`; esa función debe usar la clave de servicio solo en Supabase y nunca devolver secretos al navegador. Sin ella, el alta de estudiantes se mantiene disponible en el backend Node externo, no en GitHub Pages.
+Los CRUD de estudiantes, alertas, casos, intervenciones y citas, además del dashboard, consultan Supabase directamente. El alta de estudiantes usa la Edge Function `create-student`, que crea Auth, `usuarios` y `estudiantes` con rollback y mantiene la clave de servicio exclusivamente en Supabase. El frontend permite configurar otro nombre mediante `VITE_SUPABASE_CREATE_STUDENT_FUNCTION`.
+
+Para habilitar el alta completa en producción:
+
+1. Despliega `supabase/functions/create-student/index.ts` con `supabase functions deploy create-student`.
+2. Configura en los secretos de Edge Functions `SUPABASE_SERVICE_ROLE_KEY`. `SUPABASE_URL` y `SUPABASE_ANON_KEY` deben estar disponibles para la función; Supabase normalmente las proporciona por defecto.
+3. Define `VITE_SUPABASE_CREATE_STUDENT_FUNCTION=create-student` solo si deseas dejar explícito el nombre.
+4. Ejecuta `SUPABASE_RLS_ADMIN.sql` en el SQL Editor y verifica que la columna `usuarios.password` acepte `NULL`; la función nunca inserta la contraseña en esa tabla.
 
 ## GitHub Pages
 

@@ -32,11 +32,13 @@ create policy "pipe admin usuarios select" on public.usuarios for select to auth
 create policy "pipe admin usuarios insert" on public.usuarios for insert to authenticated with check (public.is_pipe_admin());
 create policy "pipe admin usuarios update" on public.usuarios for update to authenticated using (public.is_pipe_admin()) with check (public.is_pipe_admin());
 create policy "pipe admin usuarios delete" on public.usuarios for delete to authenticated using (public.is_pipe_admin());
+create policy "pipe own usuario select" on public.usuarios for select to authenticated using (lower(correo) = lower(coalesce(auth.jwt() ->> 'email', '')));
 
 create policy "pipe admin estudiantes select" on public.estudiantes for select to authenticated using (public.is_pipe_admin());
 create policy "pipe admin estudiantes insert" on public.estudiantes for insert to authenticated with check (public.is_pipe_admin());
 create policy "pipe admin estudiantes update" on public.estudiantes for update to authenticated using (public.is_pipe_admin()) with check (public.is_pipe_admin());
 create policy "pipe admin estudiantes delete" on public.estudiantes for delete to authenticated using (public.is_pipe_admin());
+create policy "pipe own estudiante select" on public.estudiantes for select to authenticated using (usuario_id = (select u.id from public.usuarios u where lower(u.correo) = lower(coalesce(auth.jwt() ->> 'email', ''))));
 
 create policy "pipe admin alertas select" on public.alertas for select to authenticated using (public.is_pipe_admin());
 create policy "pipe admin alertas insert" on public.alertas for insert to authenticated with check (public.is_pipe_admin());
@@ -52,6 +54,7 @@ create policy "pipe admin citas select" on public.citas for select to authentica
 create policy "pipe admin citas insert" on public.citas for insert to authenticated with check (public.is_pipe_admin());
 create policy "pipe admin citas update" on public.citas for update to authenticated using (public.is_pipe_admin()) with check (public.is_pipe_admin());
 create policy "pipe admin citas delete" on public.citas for delete to authenticated using (public.is_pipe_admin());
+create policy "pipe own citas select" on public.citas for select to authenticated using (estudiante_id = (select e.id from public.estudiantes e join public.usuarios u on u.id = e.usuario_id where lower(u.correo) = lower(coalesce(auth.jwt() ->> 'email', ''))));
 
 create policy "pipe admin intervenciones select" on public.intervenciones for select to authenticated using (public.is_pipe_admin());
 create policy "pipe admin intervenciones insert" on public.intervenciones for insert to authenticated with check (public.is_pipe_admin());

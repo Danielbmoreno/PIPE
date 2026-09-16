@@ -20,9 +20,17 @@ const getProfile = async (authUser) => {
 	const rol = roleMap[Number(profile.rol_id)];
 	if (!rol) throw new Error(`El rol_id ${profile.rol_id} no corresponde a un rol válido`);
 
+	const { data: student, error: studentError } = await requireSupabase()
+		.from('estudiantes')
+		.select('id')
+		.eq('usuario_id', profile.id)
+		.maybeSingle();
+	if (studentError) throw studentError;
+
 	return {
 		...profile,
-		rol_id: rol
+		rol_id: rol,
+		estudiante_id: student?.id || null
 	};
 };
 

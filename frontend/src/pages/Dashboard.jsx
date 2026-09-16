@@ -67,6 +67,8 @@ const Dashboard = () => {
     };
 
     fetchData();
+    window.addEventListener('pipe:students-changed', fetchData);
+    return () => window.removeEventListener('pipe:students-changed', fetchData);
   }, []);
 
   if (loading) return <Loader />;
