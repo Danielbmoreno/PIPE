@@ -3,16 +3,23 @@ import { requireSupabase } from '../lib/supabase.js';
 const getProfile = async (authUser) => {
 	const { data, error } = await requireSupabase()
 		.from('usuarios')
-		.select('*')
+		.select('*, roles(nombre)')
 		.eq('correo', authUser.email)
 		.maybeSingle();
 
 	if (error) throw error;
-	return data || {
-		uuid: authUser.id,
-		correo: authUser.email,
-		nombre: authUser.user_metadata?.nombre || authUser.email,
-		rol_id: authUser.user_metadata?.rol_id || 'estudiante'
+	if (!data) {
+		return {
+			uuid: authUser.id,
+			correo: authUser.email,
+			nombre: authUser.user_metadata?.nombre || authUser.email,
+			rol_id: null
+		};
+	}
+
+	return {
+		...data,
+		rol_id: data.roles?.nombre || null
 	};
 };
 
