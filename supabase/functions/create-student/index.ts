@@ -1,8 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
+  'Access-Control-Allow-Origin': 'https://danielbmoreno.github.io',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
@@ -17,31 +18,33 @@ const getRequiredEnv = (name: string) => {
 };
 
 Deno.serve(async (request) => {
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (request.method === 'OPTIONS') {
+    return new Response('ok', { status: 200, headers: corsHeaders });
+  }
   if (request.method !== 'POST') return json({ error: 'Método no permitido.' }, 405);
 
-  let authUserId: string | null = null;
   let createdAuthUserId: string | null = null;
   let createdProfileId: number | null = null;
-  const supabaseUrl = getRequiredEnv('SUPABASE_URL');
-  const anonKey = getRequiredEnv('SUPABASE_ANON_KEY');
-  const serviceRoleKey = getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY');
-  const authorization = request.headers.get('Authorization');
-
-  if (!authorization?.startsWith('Bearer ')) return json({ error: 'Autenticación requerida.' }, 401);
-
-  const callerClient = createClient(supabaseUrl, anonKey, {
-    global: { headers: { Authorization: authorization } },
-    auth: { persistSession: false, autoRefreshToken: false }
-  });
-  const adminClient = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false }
-  });
+  let adminClient: ReturnType<typeof createClient> | null = null;
 
   try {
+    const supabaseUrl = getRequiredEnv('SUPABASE_URL');
+    const anonKey = getRequiredEnv('SUPABASE_ANON_KEY');
+    const serviceRoleKey = getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY');
+    const authorization = request.headers.get('Authorization');
+
+    if (!authorization?.startsWith('Bearer ')) return json({ error: 'Autenticación requerida.' }, 401);
+
+    const callerClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authorization } },
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+    adminClient = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+
     const { data: authData, error: authError } = await callerClient.auth.getUser();
     if (authError || !authData.user?.email) return json({ error: 'Sesión inválida.' }, 401);
-    authUserId = authData.user.id;
 
     const { data: adminProfile, error: adminProfileError } = await adminClient
       .from('usuarios')
@@ -119,11 +122,11 @@ Deno.serve(async (request) => {
     return json({ message: 'Estudiante creado correctamente. La cuenta ya puede iniciar sesión.', usuario: profile, estudiante: student }, 201);
   } catch (error) {
     console.error('create-student rollback:', error);
-    if (createdProfileId !== null) {
+    if (createdProfileId !== null && adminClient) {
       const { error: profileRollbackError } = await adminClient.from('usuarios').delete().eq('id', createdProfileId);
       if (profileRollbackError) console.error('No se pudo revertir usuarios:', profileRollbackError);
     }
-    if (createdAuthUserId) {
+    if (createdAuthUserId && adminClient) {
       const { error: authRollbackError } = await adminClient.auth.admin.deleteUser(createdAuthUserId);
       if (authRollbackError) console.error('No se pudo revertir Auth:', authRollbackError);
     }
