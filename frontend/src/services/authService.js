@@ -1,25 +1,28 @@
 import { requireSupabase } from '../lib/supabase.js';
 
+const roleMap = {
+	1: 'admin',
+	2: 'consejero',
+	3: 'estudiante'
+};
+
 const getProfile = async (authUser) => {
 	const { data, error } = await requireSupabase()
 		.from('usuarios')
-		.select('*, roles(nombre)')
+		.select('*')
 		.eq('correo', authUser.email)
 		.maybeSingle();
 
 	if (error) throw error;
-	if (!data) {
-		return {
-			uuid: authUser.id,
-			correo: authUser.email,
-			nombre: authUser.user_metadata?.nombre || authUser.email,
-			rol_id: null
-		};
-	}
+	if (!data) throw new Error(`No se encontró un perfil para ${authUser.email}`);
+
+	const profile = data;
+	const rol = roleMap[Number(profile.rol_id)];
+	if (!rol) throw new Error(`El rol_id ${profile.rol_id} no corresponde a un rol válido`);
 
 	return {
-		...data,
-		rol_id: data.roles?.nombre || null
+		...profile,
+		rol_id: rol
 	};
 };
 
