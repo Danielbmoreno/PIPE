@@ -137,10 +137,10 @@ const Estudiantes = () => {
 
   return (
     <div className="page-shell">
-      <div className="page-header space-between">
+      <section className="admin-banner page-header space-between">
         <div><h1>Estudiantes</h1><p>Gestiona el registro de estudiantes y su información académica.</p></div>
         {user?.rol_id === 'admin' && <button className="primary-button" onClick={openCreate}>Nuevo estudiante</button>}
-      </div>
+      </section>
       {error && <div className="alert-box">{error}</div>}
       {filtered.length === 0 ? <div className="empty-state">No hay estudiantes disponibles.</div> : (
         <><div className="table-card"><table><thead><tr><th>Nombre</th><th>Código</th><th>Programa</th><th>Nivel de riesgo</th><th className="actions-column">Acciones</th></tr></thead><tbody>{currentPageData.map((item) => <tr key={item.id}><td>{item.nombre || 'Sin nombre'}</td><td>{item.codigo || 'Sin código'}</td><td>{programName(item.programa_id)}</td><td><span className={getBadgeClass(item.nivel_riesgo)}>{item.nivel_riesgo || 'Sin nivel'}</span></td><td className="actions-column"><button className="secondary-button" onClick={() => openDetail(item)}>Ver</button>{['admin', 'consejero'].includes(user?.rol_id) && <><button className="secondary-button" onClick={() => openEdit(item)}>Editar</button><button className="danger-button" onClick={() => { setSelected(item); setConfirmOpen(true); }}>Eliminar</button></>}</td></tr>)}</tbody></table></div><Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} /></>

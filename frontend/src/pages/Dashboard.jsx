@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import dashboardService from '../services/dashboardService.js';
 import alertasService from '../services/alertasService.js';
 import estudiantesService from '../services/estudiantesService.js';
@@ -9,8 +10,9 @@ import Loader from '../components/ui/Loader.jsx';
 import RiskScore from '../components/ui/RiskScore.jsx';
 import Badge from '../components/ui/Badge.jsx';
 import StudentTimeline from '../components/ui/StudentTimeline.jsx';
+import StudentDashboard from './StudentDashboard.jsx';
 
-const Dashboard = () => {
+const AdminDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -208,6 +210,11 @@ const Dashboard = () => {
       </div>
     </div>
   );
+};
+
+const Dashboard = () => {
+  const { user } = useAuth();
+  return user?.rol_id === 'estudiante' ? <StudentDashboard /> : <AdminDashboard />;
 };
 
 export default Dashboard;
