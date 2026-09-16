@@ -1,12 +1,14 @@
-import api from '../api/apiClient.js';
-import { normalizeServiceResponse } from './responseHelper.js';
+import { getRow, insertRow, listRows, removeRow, updateRow } from './supabaseService.js';
+import { requireSupabase } from '../lib/supabase.js';
 
-const resource = '/citas';
+const getAll = () => listRows('citas');
+const getForStudent = async (studentId) => {
+	const { data, error } = await requireSupabase().from('citas').select('*').eq('estudiante_id', studentId);
+	return { success: !error, data: data || [], message: '', error: error?.message || null };
+};
+const getById = (id) => getRow('citas', id);
+const create = (payload) => insertRow('citas', payload);
+const update = (id, payload) => updateRow('citas', id, payload);
+const remove = (id) => removeRow('citas', id);
 
-const getAll = () => api.get(resource).then(normalizeServiceResponse);
-const getById = (id) => api.get(`${resource}/${id}`).then(normalizeServiceResponse);
-const create = (payload) => api.post(resource, payload).then(normalizeServiceResponse);
-const update = (id, payload) => api.put(`${resource}/${id}`, payload).then(normalizeServiceResponse);
-const remove = (id) => api.delete(`${resource}/${id}`).then(normalizeServiceResponse);
-
-export default { getAll, getById, create, update, remove };
+export default { getAll, getForStudent, getById, create, update, remove };

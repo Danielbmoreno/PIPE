@@ -12,12 +12,11 @@ const MisCitas = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const response = await citasService.getAll();
+        const response = await citasService.getForStudent(user?.id);
         if (!response.success) {
           throw new Error(response.error || 'Error al cargar las citas');
         }
-        const misCitas = response.data.filter((item) => Number(item.estudiante_id) === Number(user?.id));
-        setCitas(misCitas);
+        setCitas(response.data);
       } catch (err) {
         console.error(err);
         setError('No se pudieron cargar tus citas.');

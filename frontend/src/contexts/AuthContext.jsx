@@ -3,7 +3,6 @@ import authService from '../services/authService.js';
 import { useToast } from '../components/ui/ToastContext.jsx';
 
 const AuthContext = createContext();
-const AUTH_STORAGE_KEY = 'pipe_auth';
 
 export const useAuth = () => useContext(AuthContext);
 
@@ -14,24 +13,20 @@ export const AuthProvider = ({ children }) => {
   const { showToast } = useToast();
 
   useEffect(() => {
-    const storage = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (storage) {
-      try {
-        const parsed = JSON.parse(storage);
-        setUser(parsed.user);
-        setToken(parsed.token);
-      } catch (e) {
-        console.warn('Error leyendo sesión local', e);
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-      }
-    }
-    setLoading(false);
+    authService.getSession()
+      .then((session) => {
+        if (session) {
+          setUser(session.usuario);
+          setToken(session.token);
+        }
+      })
+      .catch((error) => console.error('Error restaurando sesión Supabase:', error))
+      .finally(() => setLoading(false));
   }, []);
 
   const saveSession = useCallback((userData, jwtToken) => {
     setUser(userData);
     setToken(jwtToken);
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user: userData, token: jwtToken }));
   }, []);
 
   const login = async (correo, password) => {
@@ -60,10 +55,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = useCallback(() => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    showToast('Sesión cerrada', 'success');
+    authService.logout()
+      .catch((error) => console.error('Error cerrando sesión Supabase:', error))
+      .finally(() => {
+        setUser(null);
+        setToken(null);
+        showToast('Sesión cerrada', 'success');
+      });
   }, [showToast]);
 
   return (

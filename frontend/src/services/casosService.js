@@ -1,12 +1,9 @@
-import api from '../api/apiClient.js';
-import { normalizeServiceResponse } from './responseHelper.js';
+import { getRow, insertRow, listRows, removeRow, updateRow } from './supabaseService.js';
 
-const resource = '/casos';
-
-const getAll = () => api.get(resource).then(normalizeServiceResponse);
-const getById = (id) => api.get(`${resource}/${id}`).then(normalizeServiceResponse);
-const create = (payload) => api.post(resource, payload).then(normalizeServiceResponse);
-const update = (id, payload) => api.put(`${resource}/${id}`, payload).then(normalizeServiceResponse);
-const remove = (id) => api.delete(`${resource}/${id}`).then(normalizeServiceResponse);
+const getAll = () => listRows('casos');
+const getById = (id) => getRow('casos', id);
+const create = (payload) => insertRow('casos', payload);
+const update = (id, payload) => updateRow('casos', id, payload);
+const remove = (id) => removeRow('casos', id);
 
 export default { getAll, getById, create, update, remove };

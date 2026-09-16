@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../api/apiClient.js';
+import alertasService from '../../services/alertasService.js';
 
 const Notifications = () => {
   const [open, setOpen] = useState(false);
@@ -8,7 +8,7 @@ const Notifications = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const resp = await api.get('/alertas');
+        const resp = await alertasService.getAll();
         if (resp && resp.success) setItems(resp.data.slice(0, 6));
       } catch (e) {
         // ignore
