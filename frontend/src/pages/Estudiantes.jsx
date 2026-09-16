@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import estudiantesService from '../services/estudiantesService.js';
+import catalogService from '../services/catalogService.js';
 import Loader from '../components/ui/Loader.jsx';
 import Modal from '../components/modals/Modal.jsx';
 import ConfirmModal from '../components/modals/ConfirmModal.jsx';
 import Pagination from '../components/ui/Pagination.jsx';
 import { useToast } from '../components/ui/ToastContext.jsx';
 
-const initialForm = { nombre: '', codigo: '', programa: '', semestre: '', nivel_riesgo: '', correo: '', password: '' };
+const initialForm = { nombre: '', codigo: '', programa_id: '', nivel_riesgo: '' };
 const riskLevels = ['bajo', 'medio', 'alto', 'critico'];
 
 const getBadgeClass = (level) => {
@@ -20,10 +21,11 @@ const getBadgeClass = (level) => {
 };
 
 const Estudiantes = () => {
-  const { searchQuery } = useOutletContext();
+  const { searchQuery = '' } = useOutletContext() || {};
   const { showToast } = useToast();
   const { user } = useAuth();
   const [estudiantes, setEstudiantes] = useState([]);
+  const [programas, setProgramas] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -31,320 +33,109 @@ const Estudiantes = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selected, setSelected] = useState(null);
-  const [detailData, setDetailData] = useState(null);
   const [form, setForm] = useState(initialForm);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  useEffect(() => {
-    const loadEstudiantes = async () => {
-      try {
-        const response = await estudiantesService.getAll();
-        if (!response.success) {
-          throw new Error(response.error || 'No se pudieron cargar los estudiantes.');
-        }
-        setEstudiantes(response.data || []);
-      } catch (err) {
-        console.error(err);
-        setError('No se pudieron cargar los estudiantes.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadEstudiantes();
-  }, []);
-
-  useEffect(() => {
-    const query = searchQuery.trim().toLowerCase();
-    setPage(1);
-    setFiltered(
-      estudiantes.filter((item) =>
-        item.nombre.toLowerCase().includes(query) ||
-        (item.codigo_radicado || '').toLowerCase().includes(query) ||
-        item.codigo.toLowerCase().includes(query) ||
-        item.programa.toLowerCase().includes(query)
-      )
-    );
-  }, [estudiantes, searchQuery]);
-
-  const openCreate = () => {
-    setSelected(null);
-    setForm(initialForm);
-    setModalOpen(true);
-  };
-
-  const openEdit = (estudiante) => {
-    setSelected(estudiante);
-    setForm({
-      nombre: estudiante.nombre || '',
-      codigo: estudiante.codigo || '',
-      programa: estudiante.programa || '',
-      semestre: estudiante.semestre || '',
-      nivel_riesgo: estudiante.nivel_riesgo || ''
-    });
-    setModalOpen(true);
-  };
-
-  const openDetail = async (estudiante) => {
-    setDetailData(null);
-    setDetailOpen(true);
+  const loadData = async () => {
+    setLoading(true);
     try {
-      const response = await estudiantesService.getById(estudiante.id);
-      if (!response.success) {
-        throw new Error(response.error || 'No se pudo cargar el detalle del estudiante');
-      }
-      setDetailData(response.data);
+      const [studentsResponse, programsResponse] = await Promise.all([
+        estudiantesService.getAll(),
+        catalogService.getPrograms()
+      ]);
+      if (!studentsResponse.success) throw new Error(studentsResponse.error || 'No se pudieron cargar los estudiantes.');
+      if (!programsResponse.success) throw new Error(programsResponse.error || 'No se pudieron cargar los programas.');
+      setEstudiantes(studentsResponse.data || []);
+      setProgramas(programsResponse.data || []);
+      setError('');
     } catch (err) {
-      console.error(err);
-      setError('No se pudo cargar el detalle del estudiante.');
+      console.error('Error cargando estudiantes:', err);
+      setError(err.message || 'No se pudieron cargar los estudiantes.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const closeModal = () => setModalOpen(false);
-  const closeDetail = () => setDetailOpen(false);
+  useEffect(() => { loadData(); }, []);
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  useEffect(() => {
+    const query = String(searchQuery).trim().toLowerCase();
+    setPage(1);
+    setFiltered(estudiantes.filter((item) => [item.nombre, item.codigo, item.nivel_riesgo]
+      .some((value) => String(value || '').toLowerCase().includes(query))));
+  }, [estudiantes, searchQuery]);
+
+  const programName = (programId) => programas.find((item) => String(item.id) === String(programId))?.nombre || 'Sin programa';
+  const openCreate = () => { setSelected(null); setForm(initialForm); setModalOpen(true); };
+  const openEdit = (student) => {
+    setSelected(student);
+    setForm({ nombre: student.nombre || '', codigo: student.codigo || '', programa_id: student.programa_id || '', nivel_riesgo: student.nivel_riesgo || '' });
+    setModalOpen(true);
   };
+  const openDetail = (student) => { setSelected(student); setDetailOpen(true); };
+  const handleChange = (event) => setForm((previous) => ({ ...previous, [event.target.name]: event.target.value }));
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSaving(true);
     try {
-      if (selected) {
-        const response = await estudiantesService.update(selected.id, form);
-        if (!response.success) throw new Error(response.error || 'Error al actualizar estudiante.');
-        setEstudiantes((prev) => prev.map((item) => (item.id === selected.id ? response.data : item)));
-        showToast('Estudiante actualizado.', 'success');
-      } else {
-        const payload = { ...form };
-        const response = await estudiantesService.create(payload);
-        if (!response.success) throw new Error(response.error || 'Error al crear estudiante.');
-        setEstudiantes((prev) => [response.data, ...prev]);
-        if (response.data?.plain_password) {
-          showToast(`Estudiante creado. Contraseña: ${response.data.plain_password}`, 'success');
-        } else {
-          showToast('Estudiante creado.', 'success');
-        }
-      }
-      closeModal();
+      const payload = {
+        nombre: form.nombre.trim(),
+        codigo: form.codigo.trim(),
+        programa_id: form.programa_id ? Number(form.programa_id) : null,
+        nivel_riesgo: form.nivel_riesgo
+      };
+      const response = selected
+        ? await estudiantesService.update(selected.id, payload)
+        : await estudiantesService.create(payload);
+      if (!response.success) throw new Error(response.error || 'No se pudo guardar el estudiante.');
+      setEstudiantes((previous) => selected
+        ? previous.map((item) => item.id === selected.id ? response.data : item)
+        : [response.data, ...previous]);
+      setModalOpen(false);
+      showToast(selected ? 'Estudiante actualizado.' : 'Estudiante creado.', 'success');
     } catch (err) {
-      console.error(err);
-      showToast(err.message || 'Error al guardar estudiante.', 'error');
+      console.error('Error guardando estudiante:', err);
+      showToast(err.message || 'No se pudo guardar el estudiante.', 'error');
     } finally {
       setSaving(false);
     }
   };
 
-  const askDelete = (estudiante) => {
-    setSelected(estudiante);
-    setConfirmOpen(true);
-  };
-
   const handleDelete = async () => {
     if (!selected) return;
-    try {
-      const response = await estudiantesService.remove(selected.id);
-      if (!response.success) throw new Error(response.error || 'No se pudo eliminar el estudiante.');
-      setEstudiantes((prev) => prev.filter((item) => item.id !== selected.id));
-      setConfirmOpen(false);
-      showToast('Estudiante eliminado.', 'success');
-    } catch (err) {
-      console.error(err);
-      showToast(err.message || 'No se pudo eliminar el estudiante.', 'error');
+    const response = await estudiantesService.remove(selected.id);
+    if (!response.success) {
+      console.error('Error eliminando estudiante:', response.error);
+      showToast(response.error || 'No se pudo eliminar el estudiante.', 'error');
+      return;
     }
+    setEstudiantes((previous) => previous.filter((item) => item.id !== selected.id));
+    setConfirmOpen(false);
+    showToast('Estudiante eliminado.', 'success');
   };
 
+  if (loading) return <Loader />;
   const currentPageData = filtered.slice((page - 1) * pageSize, page * pageSize);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-
-  if (loading) return <Loader />;
 
   return (
     <div className="page-shell">
       <div className="page-header space-between">
-        <div>
-          <h1>Estudiantes</h1>
-          <p>Gestiona el registro de estudiantes y su información académica.</p>
-        </div>
-        {['admin','consejero'].includes(user?.rol_id) ? (
-          <button className="primary-button" onClick={openCreate}>Nuevo estudiante</button>
-        ) : (
-          <div style={{ color: 'var(--text-muted)' }}>No tienes permiso para crear estudiantes</div>
-        )}
+        <div><h1>Estudiantes</h1><p>Gestiona el registro de estudiantes y su información académica.</p></div>
+        {['admin', 'consejero'].includes(user?.rol_id) && <button className="primary-button" onClick={openCreate}>Nuevo estudiante</button>}
       </div>
-
       {error && <div className="alert-box">{error}</div>}
-
-      {filtered.length === 0 ? (
-        <div className="empty-state">No hay estudiantes disponibles.</div>
-      ) : (
-        <>
-          <div className="table-card">
-            <table>
-              <thead>
-                <tr>
-                  <th>Radicado</th>
-                  <th>Nombre</th>
-                  <th>Código</th>
-                  <th>Código radicado</th>
-                  <th>Programa</th>
-                  <th>Semestre</th>
-                  <th>Nivel de riesgo</th>
-                  <th className="actions-column">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentPageData.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.codigo_radicado || 'N/A'}</td>
-                    <td>{item.nombre}</td>
-                    <td>{item.codigo}</td>
-                    <td>{item.codigo_radicado || 'N/A'}</td>
-                    <td>{item.programa}</td>
-
-                    <td>{item.semestre}</td>
-                    <td><span className={getBadgeClass(item.nivel_riesgo)}>{item.nivel_riesgo || 'n/a'}</span></td>
-                    <td className="actions-column">
-                      <button className="secondary-button" onClick={() => openDetail(item)}>Ver</button>
-                      {['admin','consejero'].includes(user?.rol_id) ? (
-                        <>
-                          <button className="secondary-button" onClick={() => openEdit(item)}>Editar</button>
-                          <button className="danger-button" onClick={() => askDelete(item)}>Eliminar</button>
-                        </>
-                      ) : null}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <Pagination currentPage={page} totalPages={totalPages} onPageChange={(nextPage) => setPage(nextPage)} />
-        </>
+      {filtered.length === 0 ? <div className="empty-state">No hay estudiantes disponibles.</div> : (
+        <><div className="table-card"><table><thead><tr><th>Nombre</th><th>Código</th><th>Programa</th><th>Nivel de riesgo</th><th className="actions-column">Acciones</th></tr></thead><tbody>{currentPageData.map((item) => <tr key={item.id}><td>{item.nombre || 'Sin nombre'}</td><td>{item.codigo || 'Sin código'}</td><td>{programName(item.programa_id)}</td><td><span className={getBadgeClass(item.nivel_riesgo)}>{item.nivel_riesgo || 'Sin nivel'}</span></td><td className="actions-column"><button className="secondary-button" onClick={() => openDetail(item)}>Ver</button>{['admin', 'consejero'].includes(user?.rol_id) && <><button className="secondary-button" onClick={() => openEdit(item)}>Editar</button><button className="danger-button" onClick={() => { setSelected(item); setConfirmOpen(true); }}>Eliminar</button></>}</td></tr>)}</tbody></table></div><Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} /></>
       )}
-
-      <Modal
-        title={selected ? 'Editar estudiante' : 'Nuevo estudiante'}
-        open={modalOpen}
-        onClose={closeModal}
-        footer={
-          <div className="modal-actions">
-            <button className="secondary-button" onClick={closeModal}>Cancelar</button>
-            <button className="primary-button" onClick={handleSubmit} disabled={saving}>{selected ? 'Actualizar' : 'Crear'}</button>
-          </div>
-        }
-      >
-        <form className="form-grid" onSubmit={handleSubmit}>
-          <label>
-            Nombre
-            <input type="text" name="nombre" value={form.nombre} onChange={handleChange} required />
-          </label>
-          <label>
-            Código
-            <input type="text" name="codigo" value={form.codigo} onChange={handleChange} required />
-          </label>
-          <label>
-            Programa
-            <input type="text" name="programa" value={form.programa} onChange={handleChange} required />
-          </label>
-          <label>
-            Semestre
-            <input type="number" name="semestre" value={form.semestre} onChange={handleChange} required />
-          </label>
-          <label>
-            Nivel de riesgo
-            <select name="nivel_riesgo" value={form.nivel_riesgo} onChange={handleChange} required>
-              <option value="">Seleccionar nivel</option>
-              {riskLevels.map((level) => (
-                <option value={level} key={level}>{level}</option>
-              ))}
-            </select>
-          </label>
-          <hr />
-          <h3>Datos de acceso</h3>
-          <label>
-            Correo institucional
-            <input type="email" name="correo" value={form.correo} onChange={handleChange} placeholder="usuario@universidad.edu" required />
-          </label>
-          <label>
-            Contraseña (opcional, se generará si se deja vacío)
-            <input type="text" name="password" value={form.password} onChange={handleChange} placeholder="Generar si vacío" />
-          </label>
-        </form>
+      <Modal title={selected ? 'Editar estudiante' : 'Nuevo estudiante'} open={modalOpen} onClose={() => setModalOpen(false)} footer={<div className="modal-actions"><button type="button" className="secondary-button" onClick={() => setModalOpen(false)}>Cancelar</button><button type="submit" form="student-form" className="primary-button" disabled={saving}>{selected ? 'Actualizar' : 'Crear'}</button></div>}>
+        <form id="student-form" className="form-grid" onSubmit={handleSubmit}><label>Nombre<input type="text" name="nombre" value={form.nombre} onChange={handleChange} required /></label><label>Código<input type="text" name="codigo" value={form.codigo} onChange={handleChange} required /></label><label>Programa<select name="programa_id" value={form.programa_id} onChange={handleChange} required><option value="">Seleccionar programa</option>{programas.map((programa) => <option key={programa.id} value={programa.id}>{programa.nombre}</option>)}</select></label><label>Nivel de riesgo<select name="nivel_riesgo" value={form.nivel_riesgo} onChange={handleChange} required><option value="">Seleccionar nivel</option>{riskLevels.map((level) => <option key={level} value={level}>{level[0].toUpperCase() + level.slice(1)}</option>)}</select></label></form>
       </Modal>
-
-      <Modal
-        title="Detalle del estudiante"
-        open={detailOpen}
-        onClose={closeDetail}
-        footer={
-          <div className="modal-actions">
-            <button className="secondary-button" onClick={closeDetail}>Cerrar</button>
-          </div>
-        }
-      >
-        {detailData ? (
-          <div className="detail-grid">
-            <div>
-              <strong>Código radicado:</strong>
-              <p>{detailData.codigo_radicado || 'N/A'}</p>
-            </div>
-            <div>
-              <strong>Nombre:</strong>
-              <p>{detailData.nombre}</p>
-            </div>
-            <div>
-              <strong>Código:</strong>
-              <p>{detailData.codigo}</p>
-            </div>
-            <div>
-              <strong>Programa:</strong>
-              <p>{detailData.programa}</p>
-            </div>
-            <div>
-              <strong>Semestre:</strong>
-              <p>{detailData.semestre}</p>
-            </div>
-            <div>
-              <strong>Nivel de riesgo:</strong>
-              <p>{detailData.nivel_riesgo || 'n/a'}</p>
-            </div>
-            <div>
-              <strong>Riesgo calculado:</strong>
-              <p>{detailData.risk?.nivel_riesgo_calculado || 'n/a'}</p>
-            </div>
-            <div>
-              <strong>Alertas:</strong>
-              <p>{detailData.alertas?.length ?? 0}</p>
-            </div>
-            <div>
-              <strong>Casos:</strong>
-              <p>{detailData.casos?.length ?? 0}</p>
-            </div>
-            <div>
-              <strong>Citas:</strong>
-              <p>{detailData.citas?.length ?? 0}</p>
-            </div>
-            <div>
-              <strong>Intervenciones:</strong>
-              <p>{detailData.intervenciones?.length ?? 0}</p>
-            </div>
-          </div>
-        ) : (
-          <Loader />
-        )}
-      </Modal>
-
-      <ConfirmModal
-        open={confirmOpen}
-        title="Eliminar estudiante"
-        message="¿Quieres eliminar este estudiante? Esta acción no se puede deshacer."
-        onConfirm={handleDelete}
-        onCancel={() => setConfirmOpen(false)}
-      />
+      <Modal title="Detalle del estudiante" open={detailOpen} onClose={() => setDetailOpen(false)} footer={<button className="secondary-button" onClick={() => setDetailOpen(false)}>Cerrar</button>}><div className="profile-item"><strong>Nombre</strong><span>{selected?.nombre || '-'}</span></div><div className="profile-item"><strong>Código</strong><span>{selected?.codigo || '-'}</span></div><div className="profile-item"><strong>Programa</strong><span>{selected ? programName(selected.programa_id) : '-'}</span></div><div className="profile-item"><strong>Nivel de riesgo</strong><span>{selected?.nivel_riesgo || '-'}</span></div></Modal>
+      <ConfirmModal open={confirmOpen} title="Eliminar estudiante" message="¿Quieres eliminar este estudiante?" onConfirm={handleDelete} onCancel={() => setConfirmOpen(false)} />
     </div>
   );
 };

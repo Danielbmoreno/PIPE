@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 const FiltersPanel = ({ onChange }) => {
-  const [filters, setFilters] = useState({ riesgo: '', programa: '', semestre: '' });
+  const [filters, setFilters] = useState({ riesgo: '', programa: '' });
 
   const update = (k, v) => {
     const next = { ...filters, [k]: v };
@@ -27,10 +27,6 @@ const FiltersPanel = ({ onChange }) => {
         <input placeholder="Programa" value={filters.programa} onChange={(e) => update('programa', e.target.value)} />
       </label>
 
-      <label>
-        Semestre
-        <input placeholder="Semestre" value={filters.semestre} onChange={(e) => update('semestre', e.target.value)} />
-      </label>
     </div>
   );
 };

@@ -1,207 +1,54 @@
 import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import citasService from '../services/citasService.js';
+import catalogService from '../services/catalogService.js';
 import Loader from '../components/ui/Loader.jsx';
 import Modal from '../components/modals/Modal.jsx';
 import ConfirmModal from '../components/modals/ConfirmModal.jsx';
+import { useToast } from '../components/ui/ToastContext.jsx';
 
-const initialForm = { estudiante_id: '', usuario_id: '', fecha: '', hora: '', motivo: '', estado: '' };
+const initialForm = { estudiante_id: '', fecha: '', hora: '', estado: 'programada' };
+const states = ['programada', 'atendida', 'cancelada', 'no asistió'];
 
 const Citas = () => {
-  const { searchQuery } = useOutletContext();
+  const { searchQuery = '' } = useOutletContext() || {};
+  const { user } = useAuth();
+  const { showToast } = useToast();
   const [citas, setCitas] = useState([]);
+  const [estudiantes, setEstudiantes] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [form, setForm] = useState(initialForm);
+  const [saving, setSaving] = useState(false);
+  const studentName = (id) => { const item = estudiantes.find((student) => String(student.id) === String(id)); return item ? `${item.codigo || item.id} - ${item.nombre || 'Sin nombre'}` : `Estudiante ${id}`; };
 
   useEffect(() => {
-    const loadCitas = async () => {
+    const load = async () => {
       try {
-        const response = await citasService.getAll();
-        setCitas(response.data);
-      } catch (err) {
-        setError('No se pudieron cargar las citas.');
-      } finally {
-        setLoading(false);
-      }
+        const [appointmentsResponse, studentsResponse] = await Promise.all([citasService.getAll(), catalogService.getStudents()]);
+        if (!appointmentsResponse.success) throw new Error(appointmentsResponse.error || 'No se pudieron cargar las citas.');
+        if (!studentsResponse.success) throw new Error(studentsResponse.error || 'No se pudieron cargar los estudiantes.');
+        setCitas(appointmentsResponse.data || []); setEstudiantes(studentsResponse.data || []);
+      } catch (err) { console.error('Error cargando citas:', err); setError(err.message || 'No se pudieron cargar las citas.'); } finally { setLoading(false); }
     };
-
-    loadCitas();
+    load();
   }, []);
-
-  useEffect(() => {
-    const query = searchQuery.trim().toLowerCase();
-    setFiltered(
-      citas.filter((item) =>
-        item.motivo.toLowerCase().includes(query) ||
-        item.estado.toLowerCase().includes(query) ||
-        (item.codigo_radicado || '').toLowerCase().includes(query) ||
-        String(item.estudiante_id).includes(query)
-      )
-    );
-  }, [citas, searchQuery]);
-
-  const openCreate = () => {
-    setSelected(null);
-    setForm(initialForm);
-    setModalOpen(true);
-  };
-
-  const openEdit = (item) => {
-    setSelected(item);
-    setForm({
-      estudiante_id: item.estudiante_id,
-      usuario_id: item.usuario_id,
-      fecha: item.fecha,
-      hora: item.hora,
-      motivo: item.motivo,
-      estado: item.estado
-    });
-    setModalOpen(true);
-  };
-
-  const closeModal = () => setModalOpen(false);
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      if (selected) {
-        const response = await citasService.update(selected.id, form);
-        setCitas((prev) => prev.map((item) => (item.id === selected.id ? response.data : item)));
-      } else {
-        const response = await citasService.create(form);
-        setCitas((prev) => [response.data, ...prev]);
-      }
-      closeModal();
-    } catch (err) {
-      setError('Error al guardar cita.');
-    }
-  };
-
-  const askDelete = (item) => {
-    setSelected(item);
-    setConfirmOpen(true);
-  };
-
-  const handleDelete = async () => {
-    if (!selected) return;
-    try {
-      await citasService.remove(selected.id);
-      setCitas((prev) => prev.filter((item) => item.id !== selected.id));
-      setConfirmOpen(false);
-    } catch (err) {
-      setError('No se pudo eliminar la cita.');
-    }
-  };
-
+  useEffect(() => { const query = String(searchQuery).trim().toLowerCase(); setFiltered(citas.filter((item) => [item.fecha, item.hora, item.estado, studentName(item.estudiante_id)].some((value) => String(value || '').toLowerCase().includes(query)))); }, [citas, estudiantes, searchQuery]);
+  const openCreate = () => { setSelected(null); setForm(initialForm); setModalOpen(true); };
+  const openEdit = (item) => { setSelected(item); setForm({ estudiante_id: item.estudiante_id || '', fecha: item.fecha || '', hora: item.hora || '', estado: item.estado || 'programada' }); setModalOpen(true); };
+  const handleChange = (event) => setForm((previous) => ({ ...previous, [event.target.name]: event.target.value }));
+  const handleSubmit = async (event) => { event.preventDefault(); setSaving(true); try { const payload = { estudiante_id: Number(form.estudiante_id), usuario_id: user.id, fecha: form.fecha, hora: form.hora, estado: form.estado }; const response = selected ? await citasService.update(selected.id, payload) : await citasService.create(payload); if (!response.success) throw new Error(response.error || 'No se pudo guardar la cita.'); setCitas((previous) => selected ? previous.map((item) => item.id === selected.id ? response.data : item) : [response.data, ...previous]); setModalOpen(false); showToast(selected ? 'Cita actualizada.' : 'Cita creada.', 'success'); } catch (err) { console.error('Error guardando cita:', err); showToast(err.message || 'No se pudo guardar la cita.', 'error'); } finally { setSaving(false); } };
+  const handleDelete = async () => { if (!selected) return; const response = await citasService.remove(selected.id); if (!response.success) { console.error('Error eliminando cita:', response.error); showToast(response.error || 'No se pudo eliminar la cita.', 'error'); return; } setCitas((previous) => previous.filter((item) => item.id !== selected.id)); setConfirmOpen(false); showToast('Cita eliminada.', 'success'); };
   if (loading) return <Loader />;
-
-  return (
-    <div className="page-shell">
-      <div className="page-header space-between">
-        <div>
-          <h1>Citas</h1>
-          <p>Agenda y controla las citas entre consejeros y estudiantes.</p>
-        </div>
-        <button className="primary-button" onClick={openCreate}>Nueva cita</button>
-      </div>
-
-      {error && <div className="alert-box">{error}</div>}
-
-      {filtered.length === 0 ? (
-        <div className="empty-state">No hay citas disponibles.</div>
-      ) : (
-        <div className="table-card">
-          <table>
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Estudiante</th>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Motivo</th>
-                <th>Estado</th>
-                <th className="actions-column">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((item) => (
-                <tr key={item.id}>
-                  <td>{item.codigo_radicado || item.id}</td>
-
-                  <td>{item.estudiante_id}</td>
-                  <td>{item.fecha}</td>
-                  <td>{item.hora}</td>
-                  <td>{item.motivo}</td>
-                  <td>{item.estado}</td>
-                  <td className="actions-column">
-                    <button className="secondary-button" onClick={() => openEdit(item)}>Editar</button>
-                    <button className="danger-button" onClick={() => askDelete(item)}>Eliminar</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <Modal
-        title={selected ? 'Editar cita' : 'Nueva cita'}
-        open={modalOpen}
-        onClose={closeModal}
-        footer={
-          <div className="modal-actions">
-            <button className="secondary-button" onClick={closeModal}>Cancelar</button>
-            <button className="primary-button" onClick={handleSubmit}>{selected ? 'Actualizar' : 'Crear'}</button>
-          </div>
-        }
-      >
-        <form className="form-grid" onSubmit={handleSubmit}>
-          <label>
-            Estudiante ID
-            <input type="number" name="estudiante_id" value={form.estudiante_id} onChange={handleChange} required />
-          </label>
-          <label>
-            Usuario ID
-            <input type="number" name="usuario_id" value={form.usuario_id} onChange={handleChange} required />
-          </label>
-          <label>
-            Fecha
-            <input type="date" name="fecha" value={form.fecha} onChange={handleChange} required />
-          </label>
-          <label>
-            Hora
-            <input type="time" name="hora" value={form.hora} onChange={handleChange} required />
-          </label>
-          <label>
-            Motivo
-            <input type="text" name="motivo" value={form.motivo} onChange={handleChange} required />
-          </label>
-          <label>
-            Estado
-            <input type="text" name="estado" value={form.estado} onChange={handleChange} required />
-          </label>
-        </form>
-      </Modal>
-
-      <ConfirmModal
-        open={confirmOpen}
-        title="Eliminar cita"
-        message="¿Deseas eliminar esta cita?"
-        onConfirm={handleDelete}
-        onCancel={() => setConfirmOpen(false)}
-      />
-    </div>
-  );
+  return <div className="page-shell"><div className="page-header space-between"><div><h1>Citas</h1><p>Agenda y controla las citas entre consejeros y estudiantes.</p></div><button className="primary-button" onClick={openCreate}>Nueva cita</button></div>{error && <div className="alert-box">{error}</div>}{filtered.length === 0 ? <div className="empty-state">No hay citas disponibles.</div> : <div className="table-card"><table><thead><tr><th>Estudiante</th><th>Fecha</th><th>Hora</th><th>Estado</th><th className="actions-column">Acciones</th></tr></thead><tbody>{filtered.map((item) => <tr key={item.id}><td>{studentName(item.estudiante_id)}</td><td>{item.fecha || '-'}</td><td>{item.hora || '-'}</td><td>{item.estado || '-'}</td><td className="actions-column"><button className="secondary-button" onClick={() => { setSelected(item); setDetailOpen(true); }}>Ver</button><button className="secondary-button" onClick={() => openEdit(item)}>Editar</button><button className="danger-button" onClick={() => { setSelected(item); setConfirmOpen(true); }}>Eliminar</button></td></tr>)}</tbody></table></div>}
+    <Modal title={selected ? 'Editar cita' : 'Nueva cita'} open={modalOpen} onClose={() => setModalOpen(false)} footer={<div className="modal-actions"><button type="button" className="secondary-button" onClick={() => setModalOpen(false)}>Cancelar</button><button type="submit" form="appointment-form" className="primary-button" disabled={saving}>{selected ? 'Actualizar' : 'Crear'}</button></div>}><form id="appointment-form" className="form-grid" onSubmit={handleSubmit}><label>Estudiante<select name="estudiante_id" value={form.estudiante_id} onChange={handleChange} required><option value="">Seleccionar estudiante</option>{estudiantes.map((student) => <option key={student.id} value={student.id}>{student.codigo || student.id} - {student.nombre || 'Sin nombre'}</option>)}</select></label><label>Fecha<input type="date" name="fecha" value={form.fecha} onChange={handleChange} required /></label><label>Hora<input type="time" name="hora" value={form.hora} onChange={handleChange} required /></label><label>Estado<select name="estado" value={form.estado} onChange={handleChange} required>{states.map((state) => <option key={state} value={state}>{state}</option>)}</select></label></form></Modal>
+    <Modal title="Detalle de cita" open={detailOpen} onClose={() => setDetailOpen(false)} footer={<button className="secondary-button" onClick={() => setDetailOpen(false)}>Cerrar</button>}><div className="profile-item"><strong>Estudiante</strong><span>{selected ? studentName(selected.estudiante_id) : '-'}</span></div><div className="profile-item"><strong>Fecha</strong><span>{selected?.fecha || '-'}</span></div><div className="profile-item"><strong>Hora</strong><span>{selected?.hora || '-'}</span></div><div className="profile-item"><strong>Estado</strong><span>{selected?.estado || '-'}</span></div></Modal><ConfirmModal open={confirmOpen} title="Eliminar cita" message="¿Deseas eliminar esta cita?" onConfirm={handleDelete} onCancel={() => setConfirmOpen(false)} /></div>;
 };
 
 export default Citas;

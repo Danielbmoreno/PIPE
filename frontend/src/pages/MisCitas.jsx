@@ -50,20 +50,16 @@ const MisCitas = () => {
           <table>
             <thead>
               <tr>
-                <th>Código</th>
                 <th>Fecha</th>
                 <th>Hora</th>
-                <th>Motivo</th>
                 <th>Estado</th>
               </tr>
             </thead>
             <tbody>
               {citas.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.codigo_radicado || item.id}</td>
                   <td>{item.fecha}</td>
                   <td>{item.hora}</td>
-                  <td>{item.motivo}</td>
                   <td>{item.estado}</td>
                 </tr>
               ))}

@@ -4,11 +4,11 @@ import dashboardService from '../services/dashboardService.js';
 import alertasService from '../services/alertasService.js';
 import estudiantesService from '../services/estudiantesService.js';
 import citasService from '../services/citasService.js';
+import catalogService from '../services/catalogService.js';
 import Loader from '../components/ui/Loader.jsx';
 import RiskScore from '../components/ui/RiskScore.jsx';
 import Badge from '../components/ui/Badge.jsx';
 import StudentTimeline from '../components/ui/StudentTimeline.jsx';
-import FiltersPanel from '../components/ui/FiltersPanel.jsx';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -25,24 +25,27 @@ const Dashboard = () => {
   const [alertasRecientes, setAlertasRecientes] = useState([]);
   const [proximasCitas, setProximasCitas] = useState([]);
   const [estudiantesRiesgo, setEstudiantesRiesgo] = useState([]);
+  const [programas, setProgramas] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [metricsResp, alertasResp, estudiantesResp, citasResp] = await Promise.all([
+        const [metricsResp, alertasResp, estudiantesResp, citasResp, programasResp] = await Promise.all([
           dashboardService.getMetrics(),
           alertasService.getAll(),
           estudiantesService.getAll(),
-          citasService.getAll()
+          citasService.getAll(),
+          catalogService.getPrograms()
         ]);
 
         if (!metricsResp.success) throw new Error(metricsResp.error || 'Error en métricas');
-        if (!alertasResp.success || !estudiantesResp.success || !citasResp.success) {
+        if (!alertasResp.success || !estudiantesResp.success || !citasResp.success || !programasResp.success) {
           throw new Error('Error al cargar datos secundarios');
         }
 
         setStats(metricsResp.data);
+        setProgramas(programasResp.data || []);
         setAlertasRecientes(alertasResp.data.slice(0, 6));
         setEstudiantesRiesgo(
           estudiantesResp.data.filter((item) => ['alto', 'critico', 'critico'].includes(String(item.nivel_riesgo || '').toLowerCase())).slice(0, 5)
@@ -168,7 +171,7 @@ const Dashboard = () => {
                       <strong>{item.nombre}</strong>
                       <Badge level={item.nivel_riesgo} />
                     </div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>{item.programa || 'Programa no definido'}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>{programas.find((programa) => String(programa.id) === String(item.programa_id))?.nombre || 'Programa no definido'}</div>
                   </li>
                 ))}
               </ul>
@@ -186,7 +189,7 @@ const Dashboard = () => {
                 {proximasCitas.map((item) => (
                   <li key={item.id}>
                     <strong>{item.fecha} · {item.hora}</strong>
-                    <span>{item.motivo || 'Sin motivo'}</span>
+                    <span>{item.estado || 'Sin estado'}</span>
                   </li>
                 ))}
               </ul>
@@ -197,7 +200,7 @@ const Dashboard = () => {
             <div className="section-head">
               <h2>Últimas acciones</h2>
             </div>
-            <StudentTimeline events={alertasRecientes.map((a) => ({ id: a.id, date: a.fecha || '—', title: `Alerta #${a.id}`, text: a.descripcion }))} />
+            <StudentTimeline events={alertasRecientes.map((a) => ({ id: a.id, date: a.created_at || '—', title: `Alerta #${a.id}`, text: a.descripcion }))} />
           </section>
         </div>
       </div>

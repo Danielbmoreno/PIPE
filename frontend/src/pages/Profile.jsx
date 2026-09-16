@@ -51,7 +51,7 @@ const Profile = () => {
         <div className="tiles-grid">
           <div className="tile">
             <strong>Rol asignado</strong>
-            <span>{user?.rol_id || 'Estudiante'}</span>
+            <span>{user?.rol_id || '-'}</span>
           </div>
           <div className="tile">
             <strong>Permisos</strong>
