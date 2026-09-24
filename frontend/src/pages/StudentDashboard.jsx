@@ -7,6 +7,7 @@ import citasService from '../services/citasService.js';
 import Loader from '../components/ui/Loader.jsx';
 import StudentWelcome from '../components/student/StudentWelcome.jsx';
 import FloatingMinu from '../components/student/FloatingMinu.jsx';
+import SpaceLinks from '../components/student/SpaceLinks.jsx';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -48,7 +49,7 @@ const StudentDashboard = () => {
       <div className="hero-copy"><span className="eyebrow">TU ESPACIO DE ACOMPAÑAMIENTO</span><StudentWelcome name={displayName} /><p>Cada paso cuenta. Sigue avanzando en tu proceso académico.</p><div className="hero-actions"><button className="primary-button" onClick={() => navigate('/app/mis-citas')}>Ver mis citas <span>→</span></button><button className="ghost-button" onClick={() => navigate('/app/profile')}>Mi perfil</button></div></div>
       <div className="hero-shape" aria-hidden="true"><div className="hero-sun" /><div className="hero-ring ring-one" /><div className="hero-ring ring-two" /><div className="hero-book">✦</div></div>
     </section>
-    <nav className="pipe-space-links" aria-label="Tu espacio de acompañamiento"><button onClick={() => navigate('/app/mi-espacio')}><span aria-hidden="true">✦</span><strong>Mi espacio PIPE</strong><small>Un momento para ti</small></button><button onClick={() => navigate('/app/mi-espacio?seccion=pausa')}><span aria-hidden="true">◒</span><strong>Tomarme una pausa</strong><small>Descansa y vuelve a empezar</small></button><button onClick={() => navigate('/app/mi-espacio?seccion=recursos')}><span aria-hidden="true">▤</span><strong>Recursos</strong><small>Algo nuevo por descubrir</small></button></nav>
+    <SpaceLinks />
     <div className="student-grid">
       <section className="next-appointment student-card"><div className="card-kicker"><span>◷</span> MI PRÓXIMA CITA</div>{nextAppointment ? <div className="appointment-highlight"><div className="date-block"><strong>{new Date(`${nextAppointment.fecha}T00:00:00`).toLocaleDateString('es-CO', { month: 'short' }).replace('.', '').toUpperCase()}</strong><b>{new Date(`${nextAppointment.fecha}T00:00:00`).getDate()}</b></div><div><h2>{nextAppointment.hora}</h2><p>Acompañamiento académico</p><span className="soft-status">{nextAppointment.estado || 'PROGRAMADA'}</span></div></div> : <div className="empty-appointment"><strong>Tu agenda está libre por ahora.</strong><p>Cuando tu equipo de acompañamiento programe una cita, aparecerá aquí.</p></div>}<button className="text-link" onClick={() => navigate('/app/mis-citas')}>Ver mis citas <span>→</span></button></section>
       <section className="student-card info-card"><div className="card-kicker"><span>◎</span> MI INFORMACIÓN</div><div className="info-row"><span>Programa</span><strong>{program?.nombre || 'Programa no definido'}</strong></div><div className="info-row"><span>Código</span><strong>{student?.codigo || '—'}</strong></div><div className="info-row"><span>Estado de seguimiento</span><strong className="stable"><i />{followUp}</strong></div></section>

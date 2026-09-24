@@ -11,8 +11,13 @@ import RiskScore from '../components/ui/RiskScore.jsx';
 import Badge from '../components/ui/Badge.jsx';
 import StudentTimeline from '../components/ui/StudentTimeline.jsx';
 import StudentDashboard from './StudentDashboard.jsx';
+import StudentWelcome from '../components/student/StudentWelcome.jsx';
+import SpaceLinks from '../components/student/SpaceLinks.jsx';
+import FloatingMinu from '../components/student/FloatingMinu.jsx';
 
 const AdminDashboard = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.rol_id === 'admin';
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -76,7 +81,7 @@ const AdminDashboard = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="page-shell">
+    <div className={`page-shell${isAdmin ? ' pipe-with-minu pipe-admin-dashboard' : ''}`}>
       <div className="page-header">
         <div>
           <h1>Dashboard</h1>
@@ -85,6 +90,11 @@ const AdminDashboard = () => {
       </div>
 
       {error && <div className="alert-box">{error}</div>}
+
+      {isAdmin && <>
+        <section className="student-hero pipe-admin-welcome"><div className="hero-copy"><span className="eyebrow">TU ESPACIO EN PIPE</span><StudentWelcome name={user.nombre} heading="h2" /><p>Acompañar también empieza por cuidar de ti. Encuentra una pausa, una lectura o una idea para continuar.</p></div></section>
+        <SpaceLinks />
+      </>}
 
       <div className="dashboard-grid">
         <div className="overview-panel">
@@ -208,6 +218,7 @@ const AdminDashboard = () => {
           </section>
         </div>
       </div>
+      {isAdmin && <FloatingMinu />}
     </div>
   );
 };

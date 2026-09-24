@@ -933,6 +933,12 @@ body { font-family: "Trebuchet MS", "Segoe UI", sans-serif; background: var(--bg
 
 /* PIPE student space: scoped additions, preserving existing modules. */
 .pipe-with-minu { min-width: 0; }
+.pipe-admin-welcome { grid-template-columns: minmax(0, 1fr); min-height: 0; padding: 30px; }
+.pipe-admin-welcome h2 { margin: 12px 0; color: #fff; font-size: clamp(1.6rem, 3vw, 2.5rem); }
+.pipe-admin-welcome p { max-width: 680px; }
+@media (max-width: 1399px) {
+  .pipe-admin-dashboard .dashboard-grid { grid-template-columns: minmax(0, 1fr); }
+}
 .pipe-space { gap: 26px; }
 .pipe-space h2 { margin: 10px 0 14px; font-size: clamp(1.25rem, 2vw, 1.65rem); }
 .pipe-space p { line-height: 1.65; }

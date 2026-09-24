@@ -5,7 +5,7 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 
-test('rutas: páginas nuevas solo para estudiantes y navegación anterior conservada', async (t) => {
+test('rutas: espacio para admin y estudiante; navegación y permisos anteriores conservados', async (t) => {
   // Test-only provider: no login, network request or production authentication change.
   const server = await createServer({
     server: { middlewareMode: true },
@@ -35,7 +35,14 @@ test('rutas: páginas nuevas solo para estudiantes y navegación anterior conser
   assert.ok(space.includes('href="/app/mis-citas"'));
   assert.ok(space.includes('href="/app/profile"'));
   assert.ok(render('estudiante', '/app/proximamente').includes('Módulo en construcción'));
-  for (const role of ['admin', 'consejero']) {
+  const adminSpace = render('admin', '/app/mi-espacio');
+  for (const text of ['Frase del día', 'Reto del día', 'Racha PIPE', 'Pausa PIPE', 'Algo para leer', 'pipe-minu-dock']) assert.ok(adminSpace.includes(text), text);
+  assert.ok(adminSpace.includes('href="/app/citas"'));
+  assert.ok(!adminSpace.includes('href="/app/mis-citas"'));
+  assert.ok(!adminSpace.includes('href="/app/profile"'));
+  assert.ok(adminSpace.includes('href="/app/mi-espacio"'));
+  assert.ok(render('admin', '/app/proximamente').includes('Módulo en construcción'));
+  for (const role of ['consejero', 'docente']) {
     for (const path of ['/app/mi-espacio', '/app/proximamente']) {
       const page = render(role, path);
       assert.ok(page.includes('No autorizado'));
@@ -45,5 +52,7 @@ test('rutas: páginas nuevas solo para estudiantes y navegación anterior conser
   }
   for (const path of ['/app/estudiantes', '/app/alertas', '/app/casos', '/app/citas', '/app/intervenciones']) assert.ok(!render('admin', path).includes('No autorizado'), path);
   assert.ok(render('consejero', '/app/intervenciones').includes('No autorizado'));
+  assert.ok(render('admin', '/app/profile').includes('No autorizado'));
+  assert.ok(render('admin', '/app/mis-citas').includes('No autorizado'));
   assert.ok(render('estudiante', '/app/alertas').includes('No autorizado'));
 });

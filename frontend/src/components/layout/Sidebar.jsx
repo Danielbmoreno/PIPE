@@ -10,8 +10,8 @@ const ROUTES = [
   { to: '/app/intervenciones', label: 'Intervenciones', roles: ['admin'] },
   { to: '/app/profile', label: 'Mi perfil', roles: ['estudiante'] },
   { to: '/app/mis-citas', label: 'Mis citas', roles: ['estudiante'] },
-  { to: '/app/mi-espacio', label: 'Mi espacio PIPE', roles: ['estudiante'] },
-  { to: '/app/proximamente', label: 'Próximamente', roles: ['estudiante'] }
+  { to: '/app/mi-espacio', label: 'Mi espacio PIPE', roles: ['admin', 'estudiante'] },
+  { to: '/app/proximamente', label: 'Próximamente', roles: ['admin', 'estudiante'] }
 ];
 
 const Sidebar = ({ open = false, onClose = () => {} }) => {
