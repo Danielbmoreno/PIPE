@@ -12,6 +12,8 @@ import Profile from '../pages/Profile.jsx';
 import MisCitas from '../pages/MisCitas.jsx';
 import Unauthorized from '../pages/Unauthorized.jsx';
 import MainLayout from '../components/layout/MainLayout.jsx';
+import StudentSpace from '../pages/StudentSpace.jsx';
+import ComingSoon from '../pages/ComingSoon.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -40,6 +42,8 @@ const AppRouter = () => {
         <Route path="citas" element={<RoleRoute allowedRoles={['admin', 'consejero']}><Citas /></RoleRoute>} />
         <Route path="profile" element={<RoleRoute allowedRoles={['estudiante']}><Profile /></RoleRoute>} />
         <Route path="mis-citas" element={<RoleRoute allowedRoles={['estudiante']}><MisCitas /></RoleRoute>} />
+        <Route path="mi-espacio" element={<RoleRoute allowedRoles={['estudiante']}><StudentSpace /></RoleRoute>} />
+        <Route path="proximamente" element={<RoleRoute allowedRoles={['estudiante']}><ComingSoon /></RoleRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
