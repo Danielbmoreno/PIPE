@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useToast } from '../components/ui/ToastContext.jsx';
 
@@ -40,6 +40,7 @@ const Login = () => {
       <div className="login-panel">
         <div className="login-brand">PIPE</div>
         <p className="login-copy">Plataforma Inteligente de Permanencia Estudiantil</p>
+        <Link className="link-button" to="/restablecer-contrasena">Ayuda para gestionar mi acceso</Link>
         <form className="login-form" onSubmit={handleSubmit}>
           <label>
             Correo institucional
@@ -67,7 +68,7 @@ const Login = () => {
           <button type="submit" className="primary-button" disabled={loading}>
             {loading ? 'Validando...' : 'Iniciar sesión'}
           </button>
-          <p className="login-hint">Debes usar un correo institucional que termine en <strong>.edu</strong>.</p>
+          <p className="login-hint">Usa tu cuenta institucional autorizada, con correo <strong>.edu</strong> o <strong>.edu.co</strong>.</p>
         </form>
       </div>
     </div>

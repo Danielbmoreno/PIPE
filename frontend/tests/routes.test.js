@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createServer } from 'vite';
+import { createTestServer as createServer } from './viteTestServer.js';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
@@ -25,8 +25,8 @@ test('rutas: espacio para admin y estudiante; navegación y permisos anteriores 
   });
   const { default: Router } = await server.ssrLoadModule('/src/router/index.jsx');
   const { ToastProvider } = await server.ssrLoadModule('/src/components/ui/ToastContext.jsx');
-  const render = (role, path) => {
-    globalThis.__pipeRouteTestAuth = { user: { id: 'route-test', nombre: 'Estudiante de prueba', rol_id: role }, loading: false, logout() {} };
+  const render = (role, path, access_ready = true) => {
+    globalThis.__pipeRouteTestAuth = { user: { id: 'route-test', nombre: 'Estudiante de prueba', rol_id: role, access_ready }, loading: false, logout() {} };
     return renderToString(React.createElement(MemoryRouter, { initialEntries: [path] }, React.createElement(ToastProvider, null, React.createElement(Router))));
   };
   const space = render('estudiante', '/app/mi-espacio');
@@ -51,8 +51,13 @@ test('rutas: espacio para admin y estudiante; navegación y permisos anteriores 
     }
   }
   for (const path of ['/app/estudiantes', '/app/alertas', '/app/casos', '/app/citas', '/app/intervenciones']) assert.ok(!render('admin', path).includes('No autorizado'), path);
-  assert.ok(render('consejero', '/app/intervenciones').includes('No autorizado'));
+  for (const path of ['/app/estudiantes', '/app/estudiantes/101', '/app/intervenciones', '/app/consultas', '/app/seguimientos']) assert.ok(!render('consejero', path).includes('No autorizado'), path);
+  for (const path of ['/app/estudiantes/101', '/app/consultas', '/app/seguimientos']) assert.ok(!render('estudiante', path).includes('No autorizado'), path);
   assert.ok(render('admin', '/app/profile').includes('No autorizado'));
   assert.ok(render('admin', '/app/mis-citas').includes('No autorizado'));
   assert.ok(render('estudiante', '/app/alertas').includes('No autorizado'));
+  const pending = render('consejero', '/app/estudiantes', false);
+  assert.ok(pending.includes('Autorización de expedientes pendiente'));
+  assert.ok(!pending.includes('student-form'));
+  assert.ok(!render('consejero', '/demo').includes('Cambiar perfil'));
 });

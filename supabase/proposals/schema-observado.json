@@ -1,0 +1,3029 @@
+{
+  "project_ref": "mkapcbpocvznfannrjcy",
+  "observed_on": "2026-10-16",
+  "source": "Supabase MCP read-only catalog queries",
+  "tables": [
+    {
+      "name": "public.roles",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('roles_id_seq'::regclass)"
+        },
+        {
+          "name": "nombre",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable",
+            "unique"
+          ]
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "usuarios_rol_id_fkey",
+          "source_table": "public.usuarios",
+          "source_columns": [
+            "rol_id"
+          ],
+          "target_table": "public.roles",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.usuarios",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('usuarios_id_seq'::regclass)"
+        },
+        {
+          "name": "nombre",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "correo",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable",
+            "unique"
+          ]
+        },
+        {
+          "name": "password",
+          "data_type": "text",
+          "format": "text",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "rol_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "created_at",
+          "data_type": "timestamp without time zone",
+          "format": "timestamp",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "uuid",
+          "data_type": "uuid",
+          "format": "uuid",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "gen_random_uuid()"
+        },
+        {
+          "name": "activo",
+          "data_type": "boolean",
+          "format": "bool",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "true"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "intervenciones_usuario_id_fkey",
+          "source_table": "public.intervenciones",
+          "source_columns": [
+            "usuario_id"
+          ],
+          "target_table": "public.usuarios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "usuarios_rol_id_fkey",
+          "source_table": "public.usuarios",
+          "source_columns": [
+            "rol_id"
+          ],
+          "target_table": "public.roles",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "estudiantes_usuario_id_fkey",
+          "source_table": "public.estudiantes",
+          "source_columns": [
+            "usuario_id"
+          ],
+          "target_table": "public.usuarios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "alertas_usuario_id_fkey",
+          "source_table": "public.alertas",
+          "source_columns": [
+            "usuario_id"
+          ],
+          "target_table": "public.usuarios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "casos_usuario_id_fkey",
+          "source_table": "public.casos",
+          "source_columns": [
+            "usuario_id"
+          ],
+          "target_table": "public.usuarios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "citas_usuario_id_fkey",
+          "source_table": "public.citas",
+          "source_columns": [
+            "usuario_id"
+          ],
+          "target_table": "public.usuarios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.facultades",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('facultades_id_seq'::regclass)"
+        },
+        {
+          "name": "nombre",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "programas_facultad_id_fkey",
+          "source_table": "public.programas",
+          "source_columns": [
+            "facultad_id"
+          ],
+          "target_table": "public.facultades",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.programas",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('programas_id_seq'::regclass)"
+        },
+        {
+          "name": "nombre",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "facultad_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "programas_facultad_id_fkey",
+          "source_table": "public.programas",
+          "source_columns": [
+            "facultad_id"
+          ],
+          "target_table": "public.facultades",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "estudiantes_programa_id_fkey",
+          "source_table": "public.estudiantes",
+          "source_columns": [
+            "programa_id"
+          ],
+          "target_table": "public.programas",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "materias_programa_id_fkey",
+          "source_table": "public.materias",
+          "source_columns": [
+            "programa_id"
+          ],
+          "target_table": "public.programas",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.estudiantes",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('estudiantes_id_seq'::regclass)"
+        },
+        {
+          "name": "nombre",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "codigo",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "programa_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "usuario_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "nivel_riesgo",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "created_at",
+          "data_type": "timestamp without time zone",
+          "format": "timestamp",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "uuid",
+          "data_type": "uuid",
+          "format": "uuid",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "gen_random_uuid()"
+        },
+        {
+          "name": "correo",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "codigo_estudiante",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "programa",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "semestre",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "estado",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "'ACTIVO'::character varying"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "rendimiento_academico_estudiante_id_fkey",
+          "source_table": "public.rendimiento_academico",
+          "source_columns": [
+            "estudiante_id"
+          ],
+          "target_table": "public.estudiantes",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "alertas_estudiante_id_fkey",
+          "source_table": "public.alertas",
+          "source_columns": [
+            "estudiante_id"
+          ],
+          "target_table": "public.estudiantes",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "casos_estudiante_id_fkey",
+          "source_table": "public.casos",
+          "source_columns": [
+            "estudiante_id"
+          ],
+          "target_table": "public.estudiantes",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "citas_estudiante_id_fkey",
+          "source_table": "public.citas",
+          "source_columns": [
+            "estudiante_id"
+          ],
+          "target_table": "public.estudiantes",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "estudiantes_programa_id_fkey",
+          "source_table": "public.estudiantes",
+          "source_columns": [
+            "programa_id"
+          ],
+          "target_table": "public.programas",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "estudiantes_usuario_id_fkey",
+          "source_table": "public.estudiantes",
+          "source_columns": [
+            "usuario_id"
+          ],
+          "target_table": "public.usuarios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.docentes",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('docentes_id_seq'::regclass)"
+        },
+        {
+          "name": "nombre",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "correo",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "docente_materia_docente_id_fkey",
+          "source_table": "public.docente_materia",
+          "source_columns": [
+            "docente_id"
+          ],
+          "target_table": "public.docentes",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.materias",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('materias_id_seq'::regclass)"
+        },
+        {
+          "name": "nombre",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "programa_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "materias_programa_id_fkey",
+          "source_table": "public.materias",
+          "source_columns": [
+            "programa_id"
+          ],
+          "target_table": "public.programas",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "docente_materia_materia_id_fkey",
+          "source_table": "public.docente_materia",
+          "source_columns": [
+            "materia_id"
+          ],
+          "target_table": "public.materias",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "rendimiento_academico_materia_id_fkey",
+          "source_table": "public.rendimiento_academico",
+          "source_columns": [
+            "materia_id"
+          ],
+          "target_table": "public.materias",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.docente_materia",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('docente_materia_id_seq'::regclass)"
+        },
+        {
+          "name": "docente_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "materia_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "docente_materia_docente_id_fkey",
+          "source_table": "public.docente_materia",
+          "source_columns": [
+            "docente_id"
+          ],
+          "target_table": "public.docentes",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "docente_materia_materia_id_fkey",
+          "source_table": "public.docente_materia",
+          "source_columns": [
+            "materia_id"
+          ],
+          "target_table": "public.materias",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.rendimiento_academico",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('rendimiento_academico_id_seq'::regclass)"
+        },
+        {
+          "name": "estudiante_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "materia_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "nota",
+          "data_type": "numeric",
+          "format": "numeric",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "asistencia",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "created_at",
+          "data_type": "timestamp without time zone",
+          "format": "timestamp",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "CURRENT_TIMESTAMP"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "rendimiento_academico_materia_id_fkey",
+          "source_table": "public.rendimiento_academico",
+          "source_columns": [
+            "materia_id"
+          ],
+          "target_table": "public.materias",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "rendimiento_academico_estudiante_id_fkey",
+          "source_table": "public.rendimiento_academico",
+          "source_columns": [
+            "estudiante_id"
+          ],
+          "target_table": "public.estudiantes",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.reglas_alerta",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('reglas_alerta_id_seq'::regclass)"
+        },
+        {
+          "name": "nombre",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "condicion",
+          "data_type": "text",
+          "format": "text",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "nivel_riesgo",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "alertas_regla_id_fkey",
+          "source_table": "public.alertas",
+          "source_columns": [
+            "regla_id"
+          ],
+          "target_table": "public.reglas_alerta",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.alertas",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('alertas_id_seq'::regclass)"
+        },
+        {
+          "name": "descripcion",
+          "data_type": "text",
+          "format": "text",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "nivel_riesgo",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "estudiante_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "usuario_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "regla_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "created_at",
+          "data_type": "timestamp without time zone",
+          "format": "timestamp",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "uuid",
+          "data_type": "uuid",
+          "format": "uuid",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "gen_random_uuid()"
+        },
+        {
+          "name": "codigo_radicado",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "alertas_usuario_id_fkey",
+          "source_table": "public.alertas",
+          "source_columns": [
+            "usuario_id"
+          ],
+          "target_table": "public.usuarios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "alertas_regla_id_fkey",
+          "source_table": "public.alertas",
+          "source_columns": [
+            "regla_id"
+          ],
+          "target_table": "public.reglas_alerta",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "casos_alerta_id_fkey",
+          "source_table": "public.casos",
+          "source_columns": [
+            "alerta_id"
+          ],
+          "target_table": "public.alertas",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "alertas_estudiante_id_fkey",
+          "source_table": "public.alertas",
+          "source_columns": [
+            "estudiante_id"
+          ],
+          "target_table": "public.estudiantes",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.casos",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('casos_id_seq'::regclass)"
+        },
+        {
+          "name": "descripcion",
+          "data_type": "text",
+          "format": "text",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "estado",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "estudiante_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "usuario_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "alerta_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "created_at",
+          "data_type": "timestamp without time zone",
+          "format": "timestamp",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "uuid",
+          "data_type": "uuid",
+          "format": "uuid",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "gen_random_uuid()"
+        },
+        {
+          "name": "codigo_radicado",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "intervenciones_caso_id_fkey",
+          "source_table": "public.intervenciones",
+          "source_columns": [
+            "caso_id"
+          ],
+          "target_table": "public.casos",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "casos_usuario_id_fkey",
+          "source_table": "public.casos",
+          "source_columns": [
+            "usuario_id"
+          ],
+          "target_table": "public.usuarios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "casos_estudiante_id_fkey",
+          "source_table": "public.casos",
+          "source_columns": [
+            "estudiante_id"
+          ],
+          "target_table": "public.estudiantes",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "casos_alerta_id_fkey",
+          "source_table": "public.casos",
+          "source_columns": [
+            "alerta_id"
+          ],
+          "target_table": "public.alertas",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.intervenciones",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('intervenciones_id_seq'::regclass)"
+        },
+        {
+          "name": "descripcion",
+          "data_type": "text",
+          "format": "text",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "caso_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "usuario_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "created_at",
+          "data_type": "timestamp without time zone",
+          "format": "timestamp",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "uuid",
+          "data_type": "uuid",
+          "format": "uuid",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "gen_random_uuid()"
+        },
+        {
+          "name": "codigo_radicado",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "intervenciones_usuario_id_fkey",
+          "source_table": "public.intervenciones",
+          "source_columns": [
+            "usuario_id"
+          ],
+          "target_table": "public.usuarios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "intervenciones_caso_id_fkey",
+          "source_table": "public.intervenciones",
+          "source_columns": [
+            "caso_id"
+          ],
+          "target_table": "public.casos",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.citas",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('citas_id_seq'::regclass)"
+        },
+        {
+          "name": "fecha",
+          "data_type": "date",
+          "format": "date",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "hora",
+          "data_type": "time without time zone",
+          "format": "time",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "estado",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "estudiante_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "usuario_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "created_at",
+          "data_type": "timestamp without time zone",
+          "format": "timestamp",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "uuid",
+          "data_type": "uuid",
+          "format": "uuid",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "gen_random_uuid()"
+        },
+        {
+          "name": "codigo_radicado",
+          "data_type": "character varying",
+          "format": "varchar",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "motivo",
+          "data_type": "text",
+          "format": "text",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "citas_estudiante_id_fkey",
+          "source_table": "public.citas",
+          "source_columns": [
+            "estudiante_id"
+          ],
+          "target_table": "public.estudiantes",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "citas_usuario_id_fkey",
+          "source_table": "public.citas",
+          "source_columns": [
+            "usuario_id"
+          ],
+          "target_table": "public.usuarios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.actividad",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('actividad_id_seq'::regclass)"
+        },
+        {
+          "name": "descripcion",
+          "data_type": "text",
+          "format": "text",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "usuario_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "estudiante_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "created_at",
+          "data_type": "timestamp without time zone",
+          "format": "timestamp",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "CURRENT_TIMESTAMP"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    },
+    {
+      "name": "public.notificaciones",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "updatable"
+          ],
+          "default_value": "nextval('notificaciones_id_seq'::regclass)"
+        },
+        {
+          "name": "usuario_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "estudiante_id",
+          "data_type": "integer",
+          "format": "int4",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "mensaje",
+          "data_type": "text",
+          "format": "text",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "name": "enviado",
+          "data_type": "boolean",
+          "format": "bool",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "false"
+        },
+        {
+          "name": "created_at",
+          "data_type": "timestamp without time zone",
+          "format": "timestamp",
+          "options": [
+            "nullable",
+            "updatable"
+          ],
+          "default_value": "CURRENT_TIMESTAMP"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "schemaname": "public",
+      "tablename": "alertas",
+      "policyname": "usuarios autenticados pueden actualizar alertas",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "alertas",
+      "policyname": "usuarios autenticados pueden crear alertas",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "alertas",
+      "policyname": "usuarios autenticados pueden eliminar alertas",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "alertas",
+      "policyname": "usuarios autenticados pueden ver alertas",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "casos",
+      "policyname": "usuarios autenticados pueden actualizar casos",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "casos",
+      "policyname": "usuarios autenticados pueden crear casos",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "casos",
+      "policyname": "usuarios autenticados pueden eliminar casos",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "casos",
+      "policyname": "usuarios autenticados pueden ver casos",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "citas",
+      "policyname": "usuarios autenticados pueden actualizar citas",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "citas",
+      "policyname": "usuarios autenticados pueden crear citas",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "citas",
+      "policyname": "usuarios autenticados pueden eliminar citas",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "citas",
+      "policyname": "usuarios autenticados pueden ver citas",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "estudiantes",
+      "policyname": "usuarios autenticados pueden actualizar estudiantes",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "estudiantes",
+      "policyname": "usuarios autenticados pueden crear estudiantes",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "estudiantes",
+      "policyname": "usuarios autenticados pueden eliminar estudiantes",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "estudiantes",
+      "policyname": "usuarios autenticados pueden ver estudiantes",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "intervenciones",
+      "policyname": "usuarios autenticados pueden actualizar intervenciones",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "intervenciones",
+      "policyname": "usuarios autenticados pueden crear intervenciones",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "intervenciones",
+      "policyname": "usuarios autenticados pueden eliminar intervenciones",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "intervenciones",
+      "policyname": "usuarios autenticados pueden ver intervenciones",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "programas",
+      "policyname": "Usuarios autenticados pueden ver programas",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "usuarios",
+      "policyname": "usuarios_authenticated_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    }
+  ],
+  "metadata": [
+    {
+      "section": "constraints",
+      "details": [
+        {
+          "name": "roles_pkey",
+          "table": "roles",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "roles_nombre_key",
+          "table": "roles",
+          "definition": "UNIQUE (nombre)"
+        },
+        {
+          "name": "usuarios_pkey",
+          "table": "usuarios",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "usuarios_correo_key",
+          "table": "usuarios",
+          "definition": "UNIQUE (correo)"
+        },
+        {
+          "name": "usuarios_rol_id_fkey",
+          "table": "usuarios",
+          "definition": "FOREIGN KEY (rol_id) REFERENCES roles(id)"
+        },
+        {
+          "name": "facultades_pkey",
+          "table": "facultades",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "programas_pkey",
+          "table": "programas",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "programas_facultad_id_fkey",
+          "table": "programas",
+          "definition": "FOREIGN KEY (facultad_id) REFERENCES facultades(id)"
+        },
+        {
+          "name": "estudiantes_pkey",
+          "table": "estudiantes",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "estudiantes_programa_id_fkey",
+          "table": "estudiantes",
+          "definition": "FOREIGN KEY (programa_id) REFERENCES programas(id)"
+        },
+        {
+          "name": "estudiantes_usuario_id_fkey",
+          "table": "estudiantes",
+          "definition": "FOREIGN KEY (usuario_id) REFERENCES usuarios(id)"
+        },
+        {
+          "name": "docentes_pkey",
+          "table": "docentes",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "materias_pkey",
+          "table": "materias",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "materias_programa_id_fkey",
+          "table": "materias",
+          "definition": "FOREIGN KEY (programa_id) REFERENCES programas(id)"
+        },
+        {
+          "name": "docente_materia_pkey",
+          "table": "docente_materia",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "docente_materia_docente_id_fkey",
+          "table": "docente_materia",
+          "definition": "FOREIGN KEY (docente_id) REFERENCES docentes(id)"
+        },
+        {
+          "name": "docente_materia_materia_id_fkey",
+          "table": "docente_materia",
+          "definition": "FOREIGN KEY (materia_id) REFERENCES materias(id)"
+        },
+        {
+          "name": "rendimiento_academico_pkey",
+          "table": "rendimiento_academico",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "rendimiento_academico_estudiante_id_fkey",
+          "table": "rendimiento_academico",
+          "definition": "FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id)"
+        },
+        {
+          "name": "rendimiento_academico_materia_id_fkey",
+          "table": "rendimiento_academico",
+          "definition": "FOREIGN KEY (materia_id) REFERENCES materias(id)"
+        },
+        {
+          "name": "reglas_alerta_pkey",
+          "table": "reglas_alerta",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "alertas_pkey",
+          "table": "alertas",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "alertas_estudiante_id_fkey",
+          "table": "alertas",
+          "definition": "FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id)"
+        },
+        {
+          "name": "alertas_usuario_id_fkey",
+          "table": "alertas",
+          "definition": "FOREIGN KEY (usuario_id) REFERENCES usuarios(id)"
+        },
+        {
+          "name": "alertas_regla_id_fkey",
+          "table": "alertas",
+          "definition": "FOREIGN KEY (regla_id) REFERENCES reglas_alerta(id)"
+        },
+        {
+          "name": "casos_pkey",
+          "table": "casos",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "casos_estudiante_id_fkey",
+          "table": "casos",
+          "definition": "FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id)"
+        },
+        {
+          "name": "casos_usuario_id_fkey",
+          "table": "casos",
+          "definition": "FOREIGN KEY (usuario_id) REFERENCES usuarios(id)"
+        },
+        {
+          "name": "casos_alerta_id_fkey",
+          "table": "casos",
+          "definition": "FOREIGN KEY (alerta_id) REFERENCES alertas(id)"
+        },
+        {
+          "name": "intervenciones_pkey",
+          "table": "intervenciones",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "intervenciones_caso_id_fkey",
+          "table": "intervenciones",
+          "definition": "FOREIGN KEY (caso_id) REFERENCES casos(id)"
+        },
+        {
+          "name": "intervenciones_usuario_id_fkey",
+          "table": "intervenciones",
+          "definition": "FOREIGN KEY (usuario_id) REFERENCES usuarios(id)"
+        },
+        {
+          "name": "citas_pkey",
+          "table": "citas",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "citas_estudiante_id_fkey",
+          "table": "citas",
+          "definition": "FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id)"
+        },
+        {
+          "name": "citas_usuario_id_fkey",
+          "table": "citas",
+          "definition": "FOREIGN KEY (usuario_id) REFERENCES usuarios(id)"
+        },
+        {
+          "name": "actividad_pkey",
+          "table": "actividad",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "notificaciones_pkey",
+          "table": "notificaciones",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ]
+    },
+    {
+      "section": "triggers",
+      "details": []
+    },
+    {
+      "section": "functions",
+      "details": []
+    },
+    {
+      "section": "grants",
+      "details": [
+        {
+          "role": "anon",
+          "table": "roles",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "roles",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "roles",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "roles",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "roles",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "roles",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "roles",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "roles",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "roles",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "roles",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "roles",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "roles",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "roles",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "roles",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "facultades",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "facultades",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "facultades",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "facultades",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "facultades",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "facultades",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "facultades",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "facultades",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "facultades",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "facultades",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "facultades",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "facultades",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "facultades",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "facultades",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "docentes",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "docentes",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "docentes",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "docentes",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "docentes",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "docentes",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "docentes",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "docentes",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "docentes",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "docentes",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "docentes",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "docentes",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "docentes",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "docentes",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "materias",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "materias",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "materias",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "materias",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "materias",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "materias",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "materias",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "materias",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "materias",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "materias",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "materias",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "materias",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "materias",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "materias",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "docente_materia",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "docente_materia",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "docente_materia",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "docente_materia",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "docente_materia",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "docente_materia",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "docente_materia",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "docente_materia",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "docente_materia",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "docente_materia",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "docente_materia",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "docente_materia",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "docente_materia",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "docente_materia",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "rendimiento_academico",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "rendimiento_academico",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "rendimiento_academico",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "rendimiento_academico",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "rendimiento_academico",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "rendimiento_academico",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "rendimiento_academico",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "rendimiento_academico",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "rendimiento_academico",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "rendimiento_academico",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "rendimiento_academico",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "rendimiento_academico",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "rendimiento_academico",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "rendimiento_academico",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "reglas_alerta",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "reglas_alerta",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "reglas_alerta",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "reglas_alerta",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "reglas_alerta",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "reglas_alerta",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "reglas_alerta",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "reglas_alerta",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "reglas_alerta",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "reglas_alerta",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "reglas_alerta",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "reglas_alerta",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "reglas_alerta",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "reglas_alerta",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "actividad",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "actividad",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "actividad",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "actividad",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "actividad",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "actividad",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "actividad",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "actividad",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "actividad",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "actividad",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "actividad",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "actividad",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "actividad",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "actividad",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "notificaciones",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "notificaciones",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "notificaciones",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "notificaciones",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "notificaciones",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "notificaciones",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "notificaciones",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "notificaciones",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "notificaciones",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "notificaciones",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "notificaciones",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "notificaciones",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "notificaciones",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "notificaciones",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "usuarios",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "usuarios",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "usuarios",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "usuarios",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "usuarios",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "usuarios",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "usuarios",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "usuarios",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "usuarios",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "usuarios",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "usuarios",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "usuarios",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "usuarios",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "usuarios",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "programas",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "programas",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "programas",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "programas",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "programas",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "programas",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "programas",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "programas",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "programas",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "programas",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "programas",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "programas",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "programas",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "programas",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "estudiantes",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "estudiantes",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "estudiantes",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "estudiantes",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "estudiantes",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "estudiantes",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "estudiantes",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "estudiantes",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "estudiantes",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "estudiantes",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "estudiantes",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "estudiantes",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "estudiantes",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "estudiantes",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "alertas",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "alertas",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "alertas",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "alertas",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "alertas",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "alertas",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "alertas",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "alertas",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "alertas",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "alertas",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "alertas",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "alertas",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "alertas",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "alertas",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "casos",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "casos",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "casos",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "casos",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "casos",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "casos",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "casos",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "casos",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "casos",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "casos",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "casos",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "casos",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "casos",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "casos",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "intervenciones",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "intervenciones",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "intervenciones",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "intervenciones",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "intervenciones",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "intervenciones",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "intervenciones",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "intervenciones",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "intervenciones",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "intervenciones",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "intervenciones",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "intervenciones",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "intervenciones",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "intervenciones",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "citas",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "table": "citas",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "table": "citas",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "table": "citas",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "table": "citas",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "citas",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "table": "citas",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "citas",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "table": "citas",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "table": "citas",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "citas",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "table": "citas",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "citas",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "table": "citas",
+          "privilege": "TRIGGER"
+        }
+      ]
+    }
+  ],
+  "catalogs": [
+    {
+      "tipo": "roles",
+      "valores": [
+        {
+          "id": 1,
+          "nombre": "admin"
+        },
+        {
+          "id": 2,
+          "nombre": "consejero"
+        },
+        {
+          "id": 3,
+          "nombre": "estudiante"
+        }
+      ]
+    },
+    {
+      "tipo": "programas_sistemas",
+      "valores": [
+        {
+          "id": 1,
+          "nombre": "Ingeniería de Sistemas"
+        }
+      ]
+    }
+  ]
+}

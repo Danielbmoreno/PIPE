@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import estudiantesService from '../services/estudiantesService.js';
 import catalogService from '../services/catalogService.js';
 import citasService from '../services/citasService.js';
+import { isUpcoming, sortAppointments } from '../lib/academic.js';
+import { Motivation } from '../components/ui/AccompanimentWidgets.jsx';
 import Loader from '../components/ui/Loader.jsx';
 import StudentWelcome from '../components/student/StudentWelcome.jsx';
 import FloatingMinu from '../components/student/FloatingMinu.jsx';
@@ -39,9 +41,9 @@ const StudentDashboard = () => {
   }, [user]);
 
   if (loading) return <Loader />;
-  const nextAppointment = appointments.filter((item) => item.fecha && item.fecha >= new Date().toISOString().slice(0, 10)).sort((a, b) => `${a.fecha}${a.hora}`.localeCompare(`${b.fecha}${b.hora}`))[0];
+  const nextAppointment = sortAppointments(appointments.filter((item) => isUpcoming(item)))[0];
   const displayName = student?.nombre || user?.nombre || 'Estudiante';
-  const followUp = { bajo: 'Seguimiento estable', medio: 'Seguimiento preventivo', alto: 'Acompañamiento prioritario', critico: 'Acompañamiento prioritario' }[String(student?.nivel_riesgo || '').toLowerCase()] || 'Seguimiento en curso';
+  const followUp = student?.estado_acompanamiento || { bajo: 'Seguimiento estable', medio: 'Seguimiento preventivo', alto: 'Acompañamiento prioritario', critico: 'Acompañamiento prioritario' }[String(student?.nivel_riesgo || '').toLowerCase()] || 'Estado de acompañamiento por confirmar';
 
   return <div className="student-dashboard page-shell pipe-with-minu">
     {error && <div className="alert-box">{error}</div>}
@@ -55,8 +57,8 @@ const StudentDashboard = () => {
       <section className="student-card info-card"><div className="card-kicker"><span>◎</span> MI INFORMACIÓN</div><div className="info-row"><span>Programa</span><strong>{program?.nombre || 'Programa no definido'}</strong></div><div className="info-row"><span>Código</span><strong>{student?.codigo || '—'}</strong></div><div className="info-row"><span>Estado de seguimiento</span><strong className="stable"><i />{followUp}</strong></div></section>
     </div>
     <section className="support-banner"><div><span className="eyebrow">ESTAMOS PARA ACOMPAÑARTE</span><h2>Tu bienestar importa.</h2><p>PIPE te ayuda a mantener organizados tus procesos de seguimiento, citas y acompañamiento académico.</p></div><div className="support-illustration" aria-hidden="true"><span>◒</span><span>✦</span><span>◓</span></div></section>
-    <div className="student-lower-grid"><section className="student-card"><div className="section-head"><h2>Accesos rápidos</h2><span className="section-hint">A tu ritmo</span></div><div className="quick-actions"><button onClick={() => navigate('/app/profile')}><span className="quick-icon yellow-icon">◎</span><strong>Mi perfil</strong><small>Consulta tu información académica.</small></button><button onClick={() => navigate('/app/mis-citas')}><span className="quick-icon blue-icon">▣</span><strong>Mis citas</strong><small>Revisa tus citas programadas.</small></button></div></section><section className="student-card activity-card"><div className="section-head"><h2>Actividad reciente</h2><span className="section-hint">Tu proceso</span></div>{appointments.length ? <div className="student-activity">{appointments.slice(0, 3).map((item) => <div key={item.id}><span className="activity-mark">◷</span><div><strong>Cita {String(item.estado || 'programada').toLowerCase()}</strong><small>{item.fecha} · {item.hora}</small></div></div>)}</div> : <p className="student-empty">Aún no tienes actividad reciente.</p>}</section></div>
-    <FloatingMinu />
+    <div className="student-lower-grid"><section className="student-card"><div className="section-head"><h2>Accesos rápidos</h2><span className="section-hint">A tu ritmo</span></div><div className="quick-actions"><button onClick={() => navigate('/app/profile')}><span className="quick-icon yellow-icon">◎</span><strong>Mi perfil</strong><small>Consulta tu información académica.</small></button><button onClick={() => navigate('/app/mis-citas')}><span className="quick-icon blue-icon">▣</span><strong>Mis citas</strong><small>Revisa tus citas programadas.</small></button></div></section><section className="student-card activity-card"><div className="section-head"><h2>Actividad reciente</h2><span className="section-hint">Tu proceso</span></div>{appointments.length ? <div className="student-activity">{appointments.slice(0, 3).map((item) => <div key={item.id}><span className="activity-mark">◷</span><div><strong>Cita {String(item.estado || 'sin confirmar').toLowerCase()}</strong><small>{item.fecha} · {item.hora}</small></div></div>)}</div> : <p className="student-empty">Aún no tienes actividad reciente.</p>}</section></div>
+    <Motivation /><FloatingMinu />
   </div>;
 };
 

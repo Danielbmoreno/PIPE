@@ -1,39 +1,18 @@
 import { requireSupabase } from '../lib/supabase.js';
-
-const response = (data, error = null) => ({
-  success: !error,
-  data: data ?? null,
-  message: '',
-  error: error?.message || null
-});
-
+import { createPipeRepository } from '../lib/pipeRepository.js';
+let repository;
+export const getRepository = () => repository ||= createPipeRepository(requireSupabase());
+export const resetAccess = () => repository?.reset();
 export const safeQuery = async (query) => {
-  try {
-    const result = await query();
-    return response(result.data, result.error);
-  } catch (error) {
-    console.error('Error en consulta Supabase:', error);
-    return response(null, error);
-  }
+  try { const r = await query(); return { success: !r.error, data: r.data ?? null, message: '', error: r.error?.message || null }; }
+  catch (error) { return { success: false, data: null, message: '', error: error.message }; }
 };
-
-export const listRows = async (table) => {
-  const result = await safeQuery(() => requireSupabase().from(table).select('*'));
-  return { ...result, data: result.data || [] };
+const call = async (method, ...args) => {
+  try { return await getRepository()[method](...args); }
+  catch (error) { return { success: false, data: null, message: '', error: error.message }; }
 };
-
-export const getRow = async (table, id) => {
-  return safeQuery(() => requireSupabase().from(table).select('*').eq('id', id).maybeSingle());
-};
-
-export const insertRow = async (table, payload) => {
-  return safeQuery(() => requireSupabase().from(table).insert(payload).select().single());
-};
-
-export const updateRow = async (table, id, payload) => {
-  return safeQuery(() => requireSupabase().from(table).update(payload).eq('id', id).select().single());
-};
-
-export const removeRow = async (table, id) => {
-  return safeQuery(() => requireSupabase().from(table).delete().eq('id', id));
-};
+export const listRows = (table, filters) => call('list', table, filters);
+export const getRow = (table, id) => call('get', table, id);
+export const insertRow = (table, values) => call('create', table, values);
+export const updateRow = (table, id, values) => call('update', table, id, values);
+export const removeRow = (table, id) => call('remove', table, id);

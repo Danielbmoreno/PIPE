@@ -14,6 +14,10 @@ import Unauthorized from '../pages/Unauthorized.jsx';
 import MainLayout from '../components/layout/MainLayout.jsx';
 import StudentSpace from '../pages/StudentSpace.jsx';
 import ComingSoon from '../pages/ComingSoon.jsx';
+import StudentRecord from '../pages/StudentRecord.jsx';
+import AccompanimentRecords from '../pages/AccompanimentRecords.jsx';
+import ProcessOverview from '../pages/ProcessOverview.jsx';
+import PasswordRecovery from '../pages/PasswordRecovery.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -31,14 +35,20 @@ const AppRouter = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/restablecer-contrasena" element={<PasswordRecovery />} />
       <Route path="/" element={<Navigate to="/login" />} />
       <Route path="/app" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route index element={<Navigate to="dashboard" />} />
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="estadisticas" element={<RoleRoute allowedRoles={['admin', 'consejero', 'estudiante']}><ProcessOverview key="estadisticas" /></RoleRoute>} />
+        <Route path="actividad" element={<RoleRoute allowedRoles={['admin', 'consejero', 'estudiante']}><ProcessOverview key="actividad" mode="actividad" /></RoleRoute>} />
         <Route path="estudiantes" element={<RoleRoute allowedRoles={['admin', 'docente', 'consejero']}><Estudiantes /></RoleRoute>} />
+        <Route path="estudiantes/:id" element={<RoleRoute allowedRoles={['admin', 'consejero', 'estudiante']}><StudentRecord /></RoleRoute>} />
+        <Route path="consultas" element={<RoleRoute allowedRoles={['admin', 'consejero', 'estudiante']}><AccompanimentRecords key="consultas" type="consultas" /></RoleRoute>} />
+        <Route path="seguimientos" element={<RoleRoute allowedRoles={['admin', 'consejero', 'estudiante']}><AccompanimentRecords key="seguimientos" type="seguimientos" /></RoleRoute>} />
         <Route path="alertas" element={<RoleRoute allowedRoles={['admin', 'docente', 'consejero']}><Alertas /></RoleRoute>} />
         <Route path="casos" element={<RoleRoute allowedRoles={['admin', 'consejero']}><Casos /></RoleRoute>} />
-        <Route path="intervenciones" element={<RoleRoute allowedRoles={['admin']}><Intervenciones /></RoleRoute>} />
+        <Route path="intervenciones" element={<RoleRoute allowedRoles={['admin', 'consejero']}><Intervenciones /></RoleRoute>} />
         <Route path="citas" element={<RoleRoute allowedRoles={['admin', 'consejero']}><Citas /></RoleRoute>} />
         <Route path="profile" element={<RoleRoute allowedRoles={['estudiante']}><Profile /></RoleRoute>} />
         <Route path="mis-citas" element={<RoleRoute allowedRoles={['estudiante']}><MisCitas /></RoleRoute>} />

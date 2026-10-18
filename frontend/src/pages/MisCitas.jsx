@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import citasService from '../services/citasService.js';
+import { isUpcoming, sortAppointments } from '../lib/academic.js';
 import Loader from '../components/ui/Loader.jsx';
 
 const MisCitas = () => {
@@ -21,7 +22,7 @@ const MisCitas = () => {
   }, [user]);
 
   if (loading) return <Loader />;
-  const upcoming = citas.filter((item) => item.fecha >= new Date().toISOString().slice(0, 10));
+  const upcoming = sortAppointments(citas.filter((item) => isUpcoming(item)));
   const history = citas.filter((item) => !upcoming.includes(item));
   return <div className="page-shell student-page">
     <section className="small-student-banner"><div><span className="eyebrow">ORGANIZA TU CAMINO</span><h1>Mis citas</h1><p>Un espacio para cuidar tus tiempos y seguir avanzando.</p></div><span className="banner-symbol">▣</span></section>

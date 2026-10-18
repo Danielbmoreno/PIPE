@@ -1,0 +1,7 @@
+project_id = "pipe"
+
+# Supabase Auth advertises ES256 signing keys. Validate the caller with
+# auth.getUser() inside the function, then enforce pipe_access_context.
+# The gateway's legacy JWT verifier cannot validate those signing keys.
+[functions.create-student]
+verify_jwt = false

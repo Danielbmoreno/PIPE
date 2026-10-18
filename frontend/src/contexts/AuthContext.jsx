@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import authService from '../services/authService.js';
+import { isInstitutionalEmail } from '../lib/institutionalEmail.js';
+import { resetAccess } from '../services/supabaseService.js';
 import { useToast } from '../components/ui/ToastContext.jsx';
 
 const AuthContext = createContext();
@@ -13,16 +15,28 @@ export const AuthProvider = ({ children }) => {
   const { showToast } = useToast();
 
   useEffect(() => {
-    authService.getSession()
-      .then((session) => {
-        if (session) {
-          setUser(session.usuario);
-          setToken(session.token);
-        }
-      })
-      .catch((error) => console.error('Error restaurando sesión Supabase:', error))
-      .finally(() => setLoading(false));
+    let active = true;
+    let revision = 0;
+    const restore = async () => {
+      const current = ++revision;
+      try {
+        const session = await authService.getSession();
+        if (active && current === revision) { setUser(session?.usuario || null); setToken(session?.token || null); }
+      } catch { if (active && current === revision) { setUser(null); setToken(null); } }
+      finally { if (active) setLoading(false); }
+    };
+    restore();
+    let subscription;
+    try { subscription = authService.subscribe(restore).data.subscription; } catch { /* Missing local configuration is shown by login. */ }
+    return () => { active = false; revision += 1; subscription?.unsubscribe(); };
   }, []);
+
+  const refreshSession = async () => {
+    resetAccess();
+    const session = await authService.getSession();
+    setUser(session?.usuario || null);
+    setToken(session?.token || null);
+  };
 
   const saveSession = useCallback((userData, jwtToken) => {
     setUser(userData);
@@ -35,7 +49,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     const email = String(correo).trim().toLowerCase();
-    if (!email.endsWith('.edu')) {
+    if (!isInstitutionalEmail(email)) {
       throw new Error('Debe ingresar un correo institucional válido');
     }
 
@@ -56,16 +70,15 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(() => {
     authService.logout()
-      .catch((error) => console.error('Error cerrando sesión Supabase:', error))
-      .finally(() => {
+      .then(() => {
         setUser(null);
         setToken(null);
         showToast('Sesión cerrada', 'success');
-      });
+      }).catch((error) => showToast(error.message || 'No se pudo cerrar la sesión.', 'error'));
   }, [showToast]);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );

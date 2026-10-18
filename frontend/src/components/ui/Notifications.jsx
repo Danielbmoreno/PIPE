@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import alertasService from '../../services/alertasService.js';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 
 const Notifications = () => {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([]);
 
   useEffect(() => {
+    if (user?.access_ready !== true || user.rol_id === 'estudiante') { setItems([]); return; }
     const load = async () => {
       try {
         const resp = await alertasService.getAll();
@@ -15,7 +18,7 @@ const Notifications = () => {
       }
     };
     load();
-  }, []);
+  }, [user]);
 
   return (
     <div className="notifications">

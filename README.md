@@ -1,122 +1,39 @@
-﻿# PIPE — Plataforma de Permanencia Estudiantil
+# PIPE — Plataforma de Permanencia Estudiantil
 
-PIPE es una aplicación web para organizar el acompañamiento estudiantil. Permite registrar estudiantes, identificar niveles de riesgo, gestionar alertas y casos, documentar intervenciones y programar citas de seguimiento.
+Aplicación original React/Vite, conectada a Supabase Auth y PostgreSQL y preparada para GitHub Pages. La evolución actual integra expedientes, citas, consultas, seguimientos e indicadores en los módulos reales.
 
-- Plataforma: https://danielbmoreno.github.io/PIPE/
+- Plataforma publicada: https://danielbmoreno.github.io/PIPE/
 - Repositorio: https://github.com/Danielbmoreno/PIPE
+- [Cambios, validación y operaciones pendientes de aprobación](docs/PIPE_EVOLUCION.md).
 
-## Para qué sirve
+**Estado:** cambios preparados localmente. No se ha publicado esta versión. Por autorización expresa se registró una cuenta de consejería nueva, inactiva y pendiente de habilitación segura; el lote académico y las demás altas no se han ejecutado. El nuevo frontend bloquea la consulta de expedientes mientras el contrato de autorización por estudiante no esté aprobado y activo en Supabase.
 
-Centraliza la información que utiliza el equipo de acompañamiento para dar seguimiento a los estudiantes. El dashboard muestra indicadores de estudiantes, alertas, casos y citas. El estudiante dispone de un espacio personal para consultar su información académica y sus citas.
+## Módulos y permisos previstos
 
-El nivel de riesgo se registra en la aplicación; no se implementa un modelo predictivo de deserción. El indicador de riesgo general representa la proporción de estudiantes registrados con riesgo alto o crítico.
-
-## Roles y módulos
-
-Supabase utiliza los identificadores `1 = Admin`, `2 = Consejero` y `3 = Estudiante`.
-
-| Módulo | Admin | Consejero | Estudiante |
+| Módulo | Administración | Consejería | Estudiante |
 | --- | --- | --- | --- |
-| Dashboard | Panel general | Panel general | Panel personal |
-| Estudiantes | Crear, consultar, editar y eliminar | Consultar, editar y eliminar | Consultar perfil propio |
-| Alertas | Crear, consultar, editar y eliminar | Crear, consultar, editar y eliminar | Sin acceso al módulo |
-| Casos | Crear, consultar, editar y eliminar | Crear, consultar, editar y eliminar | Sin acceso al módulo |
-| Intervenciones | Crear, consultar, editar y eliminar | Sin acceso al módulo | Sin acceso al módulo |
-| Citas | Crear, consultar, editar y eliminar | Crear, consultar, editar y eliminar | Consultar sus citas |
+| Dashboard | Indicadores institucionales | Indicadores de asignados | Panel propio |
+| Expedientes | Consultar y gestionar | Consultar asignados; actualizar acompañamiento académico | Consultar el propio |
+| Alertas, casos e intervenciones | Gestionar | Documentar y actualizar los de asignados | Sin acceso interno |
+| Citas | Gestionar | Gestionar las de asignados | Consultar las propias |
+| Consultas y seguimientos | Gestionar | Documentar los de asignados | Consultar los propios |
+| Cuentas y asignaciones | Gestionar | Sin altas ni cambio de rol | Sin gestión |
+| Eliminación | Solo administración | Sin eliminación | Sin eliminación |
 
-Esta tabla describe la interfaz actual. La autorización efectiva depende de las políticas RLS aplicadas en Supabase. El script incluido cubre al administrador y algunas lecturas propias del estudiante, pero no define los permisos operativos del consejero. También quedan referencias históricas a `docente` en el código; el servicio de autenticación del frontend reconoce los tres roles indicados arriba.
+Los identificadores de roles son `1 = admin`, `2 = consejero`, `3 = estudiante`. Las políticas RLS propuestas son la autorización efectiva; el menú no sustituye esos permisos. El contrato `pipe_access_context` impide cargar expedientes usando las políticas amplias antiguas.
 
-## Cómo se usa
+Los indicadores cuentan registros reales autorizados. No existe un modelo predictivo de deserción y la gráfica representa seguimientos completados, no notas oficiales. Los campos académicos no confirmados se muestran pendientes.
 
-### Iniciar sesión
+## Ejecutar localmente
 
-1. Abre la plataforma y escribe tu correo y contraseña.
-2. El formulario actual exige un correo que termine en `.edu`.
-3. La cuenta debe existir en Supabase Auth y tener un perfil en `usuarios` con el mismo correo y un rol válido.
-4. Al ingresar, verás el dashboard y las opciones correspondientes a tu rol.
+Se ha validado con Node.js 24. Desde `frontend/`:
 
-No hay registro público de cuentas en la interfaz ni pantalla de recuperación de contraseña.
-
-### Administrador
-
-1. En **Estudiantes**, selecciona **Nuevo estudiante**.
-2. Completa nombre, código, programa, nivel de riesgo, correo y contraseña inicial con su confirmación. El programa debe existir en el catálogo.
-3. El alta invoca `create-student`, que crea la cuenta de autenticación, el perfil y el registro académico.
-4. Registra una **Alerta** para el estudiante y, cuando corresponda, crea un **Caso** asociado. La relación con una alerta es opcional.
-5. Añade **Intervenciones** al caso para documentar el acompañamiento.
-6. En **Citas**, selecciona estudiante, fecha, hora y estado.
-7. Consulta los indicadores del dashboard y actualiza los registros conforme avance el seguimiento.
-
-Las relaciones entre alertas, casos e intervenciones se gestionan manualmente; registrar una alerta no crea automáticamente un caso.
-
-### Consejero
-
-Accede a estudiantes, alertas, casos y citas desde el menú. La interfaz permite editar y eliminar estudiantes, pero reserva el alta al administrador. Estas operaciones requieren que el proyecto Supabase tenga configuradas las políticas correspondientes al consejero.
-
-### Estudiante
-
-Consulta **Inicio**, **Mi perfil** y **Mis citas**. Las citas se muestran a partir del registro académico vinculado al perfil; el estudiante no las crea ni las modifica desde estas pantallas.
-
-### Búsqueda y cierre de sesión
-
-La barra de búsqueda filtra los registros cargados del módulo abierto que admite búsqueda. No realiza una búsqueda conjunta de toda la base de datos. Usa **Cerrar sesión** en el menú lateral al terminar.
-
-## Arquitectura
-
-El flujo del frontend es:
-
-```text
-Navegador → React/Vite → Supabase Auth y PostgreSQL con RLS
-                     → Edge Function create-student para altas
+```powershell
+npm.cmd ci
+npm.cmd run dev
 ```
 
-- **React 18 + Vite:** interfaz y compilación de archivos estáticos.
-- **React Router:** navegación con `HashRouter` y controles visuales de acceso por rol.
-- **Supabase Auth:** inicio, restauración y cierre de sesión.
-- **PostgreSQL/Supabase:** consultas directas desde los servicios del frontend.
-- **Edge Function:** valida al administrador y crea estudiantes; intenta revertir los registros creados si el alta falla.
-- **GitHub Pages:** publica el frontend mediante GitHub Actions.
-
-El repositorio conserva un backend Express independiente con JWT, bcrypt y almacenamiento en `data/db.json`. El frontend actual no lo utiliza y GitHub Pages no lo ejecuta. Cambiar sus controladores no modifica los CRUD actuales del frontend.
-
-## Estructura del repositorio
-
-```text
-frontend/
-  index.html              Título y referencia al favicon
-  public/favicon.svg      Icono de la pestaña del navegador
-  src/
-    pages/                Pantallas de los módulos
-    components/           Navegación, modales y elementos reutilizables
-    contexts/             Contexto de autenticación
-    router/               Rutas y controles de acceso
-    services/             Consultas y operaciones con Supabase
-    lib/supabase.js        Cliente de Supabase
-    styles/               Estilos de la interfaz
-supabase/functions/
-  create-student/          Alta de estudiantes con privilegios de servidor
-.github/workflows/        Compilación y publicación en GitHub Pages
-SUPABASE_RLS_ADMIN.sql     Políticas RLS incluidas
-app.js                    Entrada del backend independiente
-controllers/              Lógica del backend Express
-routes/                   Endpoints del backend Express
-middleware/               Autenticación y autorización del backend
-config/                   Persistencia local y configuración del backend
-data/                     Almacenamiento JSON del backend
-docs/PIPE/                Documentación histórica y manuales
-```
-
-## Ejecutar el frontend localmente
-
-Necesitas Node.js y npm. El workflow del repositorio utiliza Node.js 20.
-
-```bash
-git clone https://github.com/Danielbmoreno/PIPE.git
-cd PIPE/frontend
-npm ci
-```
-
-Crea `frontend/.env.local` con los datos públicos de tu proyecto:
+Crear `frontend/.env.local` con las variables públicas del proyecto, si no existe:
 
 ```env
 VITE_SUPABASE_URL=https://TU_PROYECTO.supabase.co
@@ -124,58 +41,50 @@ VITE_SUPABASE_ANON_KEY=TU_CLAVE_PUBLICA
 VITE_SUPABASE_CREATE_STUDENT_FUNCTION=create-student
 ```
 
-La tercera variable es opcional: `create-student` es el nombre predeterminado. No coloques claves de servicio privadas en variables `VITE_*`.
+No usar claves de servicio en variables `VITE_*`. La tercera variable es opcional. El desarrollo utiliza el mismo cliente Supabase y respeta RLS; no crea una base local paralela. Abrir `http://localhost:5173/PIPE/`.
 
-```bash
-npm run dev
+El acceso requiere una cuenta institucional real en Auth y un perfil activo en `usuarios`. Se aceptan direcciones `.edu` y `.edu.co`; un dominio válido por sí solo no concede acceso. Cada estudiante debe estar vinculado al perfil propio y cada consejero a sus asignaciones autorizadas.
+
+## Pruebas y compilación
+
+```powershell
+cd frontend
+npm.cmd test
+npm.cmd run build # requiere las variables públicas de Supabase
+npm.cmd run preview
 ```
 
-Abre `http://localhost:5173/PIPE/`. En PowerShell, si la política de ejecución bloquea `npm.ps1`, puedes usar `npm.cmd` en los mismos comandos.
+La [revisión de operación y seguridad](docs/PIPE_OPERACION.md) documenta el respaldo, la reversión y los controles de compilación. Para compilar en esta estación con las variables ya existentes de Actions: `python scripts/check-release-remote.py --build`, desde la raíz. No se modifican archivos de credenciales.
 
-El frontend necesita un proyecto Supabase preparado: cuentas Auth, perfiles, tablas, relaciones, catálogos y políticas RLS. No hay migraciones completas que creen todo el esquema desde cero. Las tablas utilizadas son `usuarios`, `estudiantes`, `programas`, `roles`, `alertas`, `casos`, `intervenciones` y `citas`.
+El build se genera en `frontend/dist`, con base `/PIPE/` y `HashRouter`. Las pruebas usan fixtures y transportes aislados, sin escribir en Supabase. La [validación SQL local](docs/PIPE_EVOLUCION.md) reconstruye el esquema observado en PostgreSQL temporal y comprueba RLS y duplicados; no forma parte del despliegue.
 
-Para crear estudiantes también debe estar desplegada la Edge Function. Su CORS actual admite `https://danielbmoreno.github.io`; el alta desde localhost requiere configurar ese origen en la función.
+## Alta de cuentas
 
-## Compilar y previsualizar
+El propietario decidió mantener SMTP personalizado desactivado. Consultar el [procedimiento de acceso sin SMTP](docs/PIPE_ACCESO_SIN_SMTP.md): los módulos utilizan correo y contraseña; el acceso inicial se gestiona por un administrador y la recuperación por correo está limitada. Esta decisión sustituye el bloqueo previo de entrega por email.
 
-Desde `frontend/`:
+En **Estudiantes**, un administrador puede crear un registro nuevo o usar **Crear acceso** sobre un expediente que todavía no tenga cuenta. “Crear acceso de consejería” permite vincular una nueva cuenta a un perfil profesional aprobado, con rol de consejero, sin modificar cuentas anteriores. La función original `create-student` preparada en este repositorio vincula `usuarios.auth_user_id` y `estudiantes.usuario_id`, con el rol del perfil institucional correspondiente. No reemplaza cuentas ni contraseñas existentes.
 
-```bash
-npm run build
-npm run preview
+Se requiere verificar con la persona su correo institucional real y definir una contraseña individual de al menos 12 caracteres. No se almacenan contraseñas en el expediente ni en archivos de datos. El código y el nivel de riesgo no se deben inventar para completar un formulario.
+
+La versión actualizada de la función todavía requiere aprobación y despliegue. Su CORS conserva el origen de GitHub Pages existente; el alta desde localhost no está habilitada.
+
+## Supabase y publicación
+
+La [propuesta de esquema y RLS](supabase/proposals/README.md) responde al esquema inspeccionado. Añade consultas, seguimientos, asignaciones y campos faltantes sin borrar filas existentes. El SQL y los lotes personales están pendientes de aprobación; no se ejecutan al iniciar o compilar la aplicación.
+
+El workflow `.github/workflows/deploy-pages.yml` instala dependencias, ejecuta pruebas, compila y publica `frontend/dist` al subir a `main` o al activarlo manualmente. Requiere `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en variables de Actions y GitHub Pages configurado con Source **GitHub Actions**. Por tanto, **no hacer push a main antes de autorizar el despliegue**.
+
+La publicación del frontend, la función y el SQL son operaciones distintas y deben coordinarse siguiendo la [secuencia de activación](docs/PIPE_EVOLUCION.md). No aplicar el SQL RLS histórico como sustituto de la propuesta revisada.
+
+## Arquitectura
+
+```text
+Navegador → React/Vite → Supabase Auth
+                     → Repositorio con alcance autorizado → PostgreSQL y RLS
+                     → Edge Function create-student para altas administrativas
+GitHub Actions → frontend/dist → GitHub Pages
 ```
 
-El build genera `frontend/dist`. Abre la dirección que indique Vite, con la ruta `/PIPE/`. El favicon se copia desde `public/` y el HTML generado apunta a `/PIPE/favicon.svg`.
+Los componentes originales están en `frontend/src/pages/` y `frontend/src/components/`. El repositorio de datos está en `frontend/src/lib/pipeRepository.js`; los servicios conservan sus interfaces y usan ese control central. Las propuestas se encuentran en `supabase/proposals/`.
 
-## Publicar en GitHub Pages
-
-1. Configura GitHub Pages con **Source: GitHub Actions**.
-2. En las variables de Actions del repositorio, define `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. Opcionalmente define `VITE_SUPABASE_CREATE_STUDENT_FUNCTION`.
-3. Sube los cambios a `main`.
-4. Revisa el workflow **Deploy PIPE to GitHub Pages** en la pestaña **Actions**.
-
-El workflow ejecuta `npm ci`, compila el frontend y publica `frontend/dist`. La configuración `base: '/PIPE/'` y `HashRouter` adapta los assets y las rutas al sitio del proyecto.
-
-La publicación no despliega la Edge Function ni aplica cambios SQL. Esas operaciones se realizan por separado en Supabase. Antes de reutilizar el SQL incluido, revisa las políticas existentes: el archivo contiene sentencias `create policy` y no es un conjunto de migraciones idempotentes.
-
-## Backend independiente
-
-Para trabajar específicamente sobre el backend conservado en el repositorio, ejecuta desde la raíz:
-
-```bash
-npm ci
-npm run dev
-```
-
-Configura `JWT_SECRET` y, opcionalmente, `PORT` en `.env`. El puerto predeterminado es `3000`. El inicio puede crear usuarios de ejemplo y completar campos del almacenamiento local. Este backend conserva permisos inconsistentes y no debe confundirse con la autorización de Supabase utilizada por la aplicación publicada.
-
-## Alcance y documentación adicional
-
-- No hay scripts de pruebas automatizadas configurados; un build correcto comprueba la compilación, no la autorización real por rol.
-- Editar o eliminar estudiantes desde el frontend afecta su fila académica; no sincroniza explícitamente el perfil ni elimina la cuenta Auth.
-- Las consultas de listas y métricas cargan datos en el cliente; la paginación de estudiantes es local.
-- Las políticas, restricciones, triggers y configuración del proyecto Supabase desplegado deben verificarse allí; el repositorio no permite confirmar su estado efectivo.
-- [Configuración de Supabase](SUPABASE_SETUP.md): detalles de tablas, variables y alta de estudiantes. Su URL de Pages conserva un nombre de cuenta anterior; usa el enlace al inicio de este README.
-- [SQL RLS incluido](SUPABASE_RLS_ADMIN.sql).
-- [Documentación histórica](docs/PIPE/README.md): varios documentos describen el flujo anterior basado en Express y JSON.
-- [Ejemplos de pruebas del backend](TESTING.md): las rutas protegidas requieren el token del backend.
+Se conserva el backend Express independiente con JWT y `data/db.json`; la aplicación publicada no lo utiliza. No se ha iniciado, modificado su almacenamiento ni migrado información desde él. La documentación histórica de `docs/PIPE/`, `SUPABASE_SETUP.md`, `SUPABASE_RLS_ADMIN.sql` y `TESTING.md` describe otros estados del proyecto; consultar la documentación de evolución para esta entrega.
