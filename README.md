@@ -88,3 +88,7 @@ GitHub Actions → frontend/dist → GitHub Pages
 Los componentes originales están en `frontend/src/pages/` y `frontend/src/components/`. El repositorio de datos está en `frontend/src/lib/pipeRepository.js`; los servicios conservan sus interfaces y usan ese control central. Las propuestas se encuentran en `supabase/proposals/`.
 
 Se conserva el backend Express independiente con JWT y `data/db.json`; la aplicación publicada no lo utiliza. No se ha iniciado, modificado su almacenamiento ni migrado información desde él. La documentación histórica de `docs/PIPE/`, `SUPABASE_SETUP.md`, `SUPABASE_RLS_ADMIN.sql` y `TESTING.md` describe otros estados del proyecto; consultar la documentación de evolución para esta entrega.
+
+## Publicación institucional
+
+La [publicación del 17 de octubre de 2026](docs/PIPE_DESPLIEGUE_2026-10-17.md) registra la integración ejecutada, la migración, las verificaciones reales y los pasos de acceso inicial todavía pendientes. Los informes anteriores describen estados históricos de preparación.

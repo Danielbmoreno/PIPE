@@ -1,4 +1,5 @@
--- PROPUESTA PARA APROBACIÓN. NO EJECUTADA EN SUPABASE.
+-- Esquema aplicado dentro de la transacción autorizada, versión 20261018003713.
+-- El lote personal de esa transacción permanece privado y no se incluye aquí.
 -- Proyecto verificado: mkapcbpocvznfannrjcy, PostgreSQL 17, 2026-10-16.
 -- No contiene nombres, citas ni datos académicos de personas.
 begin;

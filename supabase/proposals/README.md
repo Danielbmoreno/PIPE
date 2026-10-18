@@ -1,13 +1,9 @@
-# Operaciones pendientes de aprobación
+# Referencias de esquema y RLS
 
-- `schema-observado.json`: inspección estructural de solo lectura, sin registros personales.
-- `01_acompanamiento_y_permisos.sql`: propuesta de esquema, RLS y validaciones; no ejecutada en Supabase. Aborta salvo que se habilite explícitamente la aprobación indicada en el archivo.
-- Los registros personales y su SQL se conservan fuera de Git en `.local/approval/`.
+- `schema-observado.json`: estructura previa a la integración, sin registros personales.
+- `01_acompanamiento_y_permisos.sql`: referencia del SQL revisado, con guardia de aprobación; no es un comando de arranque ni debe repetirse como SQL bruto.
+- `../migrations/20261018003713_pipe_acompanamiento_rls_lote_autorizado.sql`: esquema de la versión registrada en producción. El lote personal fue aplicado en la misma transacción remota y permanece fuera de Git.
 
-El SQL de esquema se aplica una sola vez sobre el estado observado. No es un comando automático de arranque ni una migración que deba ejecutarse repetidamente. El lote de incorporación privado sí comprueba duplicados y su reejecución local se ha probado.
+El historial de migraciones registra la versión aplicada para evitar repetirla. El lote privado también comprueba coincidencias y su idempotencia fue validada en PostgreSQL local y, sin commit, en producción. No se deshabilitó RLS ni se borraron filas anteriores.
 
-La sustitución de políticas amplias es necesaria porque PostgreSQL combina las políticas permisivas con OR. No basta con añadir otra política restrictiva. Se conserva RLS habilitado y no se eliminan filas existentes.
-
-Consultar la [implementación y secuencia de activación](../../docs/PIPE_EVOLUCION.md) antes de aprobar. El perfil nuevo de consejería y el lote personal deben coordinarse con el nuevo contrato de acceso y la publicación autorizada.
-
-La migración versionada equivalente, creada mediante Supabase CLI 2.121.0, es `../migrations/20261017233904_pipe_acompanamiento_rls.sql`. Mantiene la misma guardia de aprobación y no está aplicada. No contiene los datos personales del lote. La [guía de operación](../../docs/PIPE_OPERACION.md) documenta la contención sin borrar registros y las pruebas adicionales de restauración.
+La sustitución de políticas amplias es necesaria porque las políticas permisivas se combinan con OR. Ver la [publicación ejecutada](../../docs/PIPE_DESPLIEGUE_2026-10-17.md) y el [acceso sin SMTP](../../docs/PIPE_ACCESO_SIN_SMTP.md).
